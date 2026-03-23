@@ -86,8 +86,6 @@ export function useAddTransaction() {
 
       // Update wallet balance
       if (txn.type === 'income') {
-        await supabase.rpc('update_wallet_balance' as any, { p_wallet_id: txn.wallet_id, p_amount: txn.amount });
-        // Fallback: manual update
         const { data: wallet } = await supabase.from('wallets').select('balance').eq('id', txn.wallet_id).single();
         if (wallet) {
           await supabase.from('wallets').update({ balance: Number(wallet.balance) + txn.amount }).eq('id', txn.wallet_id);
