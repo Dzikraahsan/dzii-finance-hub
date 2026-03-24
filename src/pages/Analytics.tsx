@@ -56,27 +56,27 @@ export default function Analytics() {
       </div>
       <div className="flex flex-col gap-3">
         {/* Income */}
-        <div className="bg-card border border-border border-blue-500 rounded-2xl p-4 flex flex-col items-center justify-center">
+        <div className="bg-card border border-border border-blue-400 rounded-2xl p-4 flex flex-col items-center justify-center">
           <p className="text-[11px] sm:text-xs text-muted-foreground">Income</p>
-          <p className="font-bold text-blue-500 text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
+          <p className="font-bold text-blue-400 text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
             {formatCurrency(totalIncome)}
           </p>
         </div>
 
         {/* Expense */}
-        <div className="bg-card border border-border border-red-500 rounded-2xl p-4 flex flex-col items-center justify-center">
+        <div className="bg-card border border-border border-red-400 rounded-2xl p-4 flex flex-col items-center justify-center">
           <p className="text-[11px] sm:text-xs text-muted-foreground">Expense</p>
-          <p className="font-bold text-red-500 text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
+          <p className="font-bold text-red-400 text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
             {formatCurrency(totalExpense)}
           </p>
         </div>
 
         {/* Net */}
-        <div className="bg-card border border-border border-green-500 rounded-2xl p-4 flex flex-col items-center justify-center">
+        <div className="bg-card border border-border border-green-400 rounded-2xl p-4 flex flex-col items-center justify-center">
           <p className="text-[11px] sm:text-xs text-muted-foreground">Net</p>
           <p
             className={`font-bold text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words ${
-              totalIncome - totalExpense >= 0 ? 'text-green-500' : 'text-red-500'
+              totalIncome - totalExpense >= 0 ? 'text-green-400' : 'text-red-400'
             }`}
           >
             {formatCurrency(totalIncome - totalExpense)}
