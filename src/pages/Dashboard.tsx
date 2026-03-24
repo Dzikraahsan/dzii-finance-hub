@@ -1,6 +1,6 @@
 import { useWallets, useTransactions, useCategories, useDeleteTransaction } from '@/hooks/useFinanceData';
 import { formatCurrency, formatDate } from '@/lib/format';
-import { TrendingUp, TrendingDown, ArrowRight, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, Sparkles, Eye, EyeOff  } from 'lucide-react';
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +35,9 @@ export default function Dashboard() {
   const totalIncome = monthTxns.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
   const totalExpense = monthTxns.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
   const recentTxns = transactions.slice(0, 5);
+
+  // Hide/Show Balance
+  const [showBalance, setShowBalance] = useState(true);
 
   const chartData = useMemo(() => {
     const days: Record<string, { income: number; expense: number }> = {};
@@ -75,19 +78,71 @@ export default function Dashboard() {
     return new Intl.NumberFormat("id-ID").format(num);
   };
 
+  // Timetone Greeting
+  const getGreeting = () => {
+  const now = new Date();
+
+  // ambil jam WIB (GMT+7)
+  const wibHour = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
+  ).getHours();
+
+  // 01:00 - 10:59 → morning
+  if (wibHour >= 1 && wibHour <= 10) return "Good morning 👋";
+
+  // 11:00 - 14:59 → afternoon
+  if (wibHour >= 11 && wibHour <= 14) return "Good afternoon ☀️";
+
+  // 15:00 - 18:59 → evening
+  if (wibHour >= 15 && wibHour <= 18) return "Good evening 🌇";
+
+  // 19:00 - 23:59 → night
+  if (wibHour >= 19 && wibHour <= 23) return "Good night 🌙";
+
+  // 00:00 → night
+  return "Good night 🌙";
+};
+
+  // Hide/Show Balance
+  const maskAmount = (value) => {
+    return showBalance ? formatCurrency(value) : "****";
+  };
+
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-muted-foreground text-sm">Good morning 👋</p>
+          <p className="text-muted-foreground text-sm">{getGreeting()}</p>
           <h1 className="text-xl font-bold text-foreground">Dzii Finance</h1>
         </div>
         <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm active:scale-95 transition-transform">D</button>
       </div>
 
       <div className="rounded-2xl gradient-primary p-5 glow-primary">
-        <p className="text-primary-foreground/70 text-xs font-medium mb-1">Total Balance</p>
-        <p className="text-2xl sm:text-3xl font-bold text-primary-foreground tracking-tight">{formatCurrency(totalBalance)}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-primary-foreground/70 text-xs font-medium mb-1">
+            Total Balance
+          </p>
+
+          <button
+            onClick={() => setShowBalance(!showBalance)}
+            className="text-primary-foreground transition-all duration-200 active:scale-90 hover:scale-110"
+          >
+            <span className="transition-all duration-300 ease-in-out inline-block">
+              {showBalance ? <EyeOff size={16} /> : <Eye size={16} />}
+            </span>
+          </button>
+        </div>
+
+        <p className="text-2xl sm:text-3xl font-bold text-primary-foreground tracking-tight transition-all duration-300 ease-in-out">
+          <span
+            key={showBalance ? "show" : "hide"}
+            className="inline-block animate-[fadeScale_0.25s_ease]"
+          >
+            {showBalance ? formatCurrency(totalBalance) : "****"}
+          </span>
+        </p>
+
         <div className="flex gap-4 mt-4">
           <div className="flex items-center gap-1.5">
             <div className="w-7 h-7 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
@@ -95,16 +150,31 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-[10px] text-primary-foreground/60">Income</p>
-              <p className="text-xs font-semibold text-primary-foreground">{formatCurrency(totalIncome)}</p>
+              <p className="text-xs font-semibold text-primary-foreground">
+                <span
+                  key={showBalance ? "inc-show" : "inc-hide"}
+                  className="inline-block animate-[fadeScale_0.25s_ease]"
+                >
+                  {showBalance ? formatCurrency(totalIncome) : "****"}
+                </span>
+              </p>
             </div>
           </div>
+
           <div className="flex items-center gap-1.5">
             <div className="w-7 h-7 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
               <TrendingDown className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>
               <p className="text-[10px] text-primary-foreground/60">Expense</p>
-              <p className="text-xs font-semibold text-primary-foreground">{formatCurrency(totalExpense)}</p>
+              <p className="text-xs font-semibold text-primary-foreground">
+                <span
+                  key={showBalance ? "exp-show" : "exp-hide"}
+                  className="inline-block animate-[fadeScale_0.25s_ease]"
+                >
+                  {showBalance ? formatCurrency(totalExpense) : "****"}
+                </span>
+              </p>
             </div>
           </div>
         </div>

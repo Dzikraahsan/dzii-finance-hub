@@ -172,6 +172,18 @@ svg:focus {
   50% { box-shadow: 0 0 25px hsl(var(--primary) / 0.4); }
 }
 
+/* Animation for balance */
+@keyframes fadeScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .animate-slide-up {
   animation: slideUp 0.3s ease-out;
 }
