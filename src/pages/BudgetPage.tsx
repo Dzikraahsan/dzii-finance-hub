@@ -1,12 +1,22 @@
-import { useBudgets, useCategories, useTransactions } from '@/hooks/useFinanceData';
+import { useBudgets, useCategories, useTransactions, useDeleteBudget } from '@/hooks/useFinanceData';
 import { formatCurrency } from '@/lib/format';
-import { Plus } from 'lucide-react';
-import { useMemo } from 'react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import AddBudgetSheet from '@/components/AddBudgetSheet';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 export default function BudgetPage() {
   const { data: budgets = [] } = useBudgets();
   const { data: categories = [] } = useCategories();
   const { data: transactions = [] } = useTransactions();
+  const deleteBudget = useDeleteBudget();
+  const [showAdd, setShowAdd] = useState(false);
+  const [editBudget, setEditBudget] = useState<any>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const currentMonth = new Date().toISOString().slice(0, 7);
 
@@ -19,11 +29,21 @@ export default function BudgetPage() {
     });
   }, [budgets, transactions, currentMonth]);
 
+  const handleDelete = async () => {
+    if (!deletingId) return;
+    try {
+      await deleteBudget.mutateAsync(deletingId);
+      toast.success('Budget deleted');
+    } catch { toast.error('Failed to delete'); }
+    setDeletingId(null);
+  };
+
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-foreground">Budget</h1>
-        <button className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center">
+        <button onClick={() => { setEditBudget(null); setShowAdd(true); }}
+          className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center active:scale-90 transition-transform">
           <Plus className="w-4 h-4 text-primary" />
         </button>
       </div>
@@ -40,12 +60,22 @@ export default function BudgetPage() {
             return (
               <div key={budget.id} className={`bg-card border border-border rounded-2xl p-4 ${status === 'over' ? 'glow-destructive' : ''}`}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: (cat?.color || '#666') + '20' }}>{cat?.icon}</div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-card-foreground">{cat?.name}</p>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: (cat?.color || '#666') + '20' }}>{cat?.icon}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-card-foreground truncate">{cat?.name}</p>
                     <p className="text-xs text-muted-foreground">{formatCurrency(budget.used)} of {formatCurrency(Number(budget.amount))}</p>
                   </div>
-                  <span className={`text-sm font-bold ${status === 'over' ? 'text-destructive' : status === 'warn' ? 'text-warning' : 'text-success'}`}>{pct}%</span>
+                  <span className={`text-sm font-bold shrink-0 ${status === 'over' ? 'text-destructive' : status === 'warn' ? 'text-warning' : 'text-success'}`}>{pct}%</span>
+                  <div className="flex gap-1 shrink-0">
+                    <button onClick={() => { setEditBudget(budget); setShowAdd(true); }}
+                      className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <Pencil className="w-3 h-3 text-primary" />
+                    </button>
+                    <button onClick={() => setDeletingId(budget.id)}
+                      className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center">
+                      <Trash2 className="w-3 h-3 text-destructive" />
+                    </button>
+                  </div>
                 </div>
                 <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
                   <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${Math.min(pct, 100)}%` }} />
@@ -58,6 +88,20 @@ export default function BudgetPage() {
           })}
         </div>
       )}
+
+      <AddBudgetSheet open={showAdd} onOpenChange={setShowAdd} editBudget={editBudget} />
+      <AlertDialog open={!!deletingId} onOpenChange={v => { if (!v) setDeletingId(null); }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Budget</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to remove this budget?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
