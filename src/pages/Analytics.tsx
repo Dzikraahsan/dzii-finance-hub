@@ -48,49 +48,56 @@ export default function Analytics() {
       <h1 className="text-xl font-bold text-foreground">Analytics</h1>
       <div className="flex gap-2">
         {(['7d', '30d', 'all'] as const).map(p => (
-          <button key={p} onClick={() => setPeriod(p)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${period === p ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground border border-border'}`}>
+          <button key={p} onClick={() => setPeriod(p)}
+            className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${period === p ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground border border-border'}`}>
             {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : 'All'}
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-card border border-border rounded-2xl p-3 text-center">
-          <p className="text-xs text-muted-foreground">Income</p>
-          <p className="text-base font-bold text-success">{formatCurrency(totalIncome)}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Income</p>
+          <p className="text-sm sm:text-base font-bold text-success">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-3 text-center">
-          <p className="text-xs text-muted-foreground">Expense</p>
-          <p className="text-base font-bold text-destructive">{formatCurrency(totalExpense)}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Expense</p>
+          <p className="text-sm sm:text-base font-bold text-destructive">{formatCurrency(totalExpense)}</p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-3 text-center">
-          <p className="text-xs text-muted-foreground">Net</p>
-          <p className={`text-base font-bold ${totalIncome - totalExpense >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(totalIncome - totalExpense)}</p>
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Net</p>
+          <p className={`text-sm sm:text-base font-bold ${totalIncome - totalExpense >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(totalIncome - totalExpense)}</p>
         </div>
       </div>
-      {expenseByCategory.length > 0 && (
+
+      {expenseByCategory.length > 0 ? (
         <div className="bg-card border border-border rounded-2xl p-4">
           <p className="text-sm font-semibold text-card-foreground mb-3">Expense by Category</p>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={180}>
             <PieChart>
-              <Pie data={expenseByCategory} dataKey="value" cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={3} strokeWidth={0}>
+              <Pie data={expenseByCategory} dataKey="value" cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} strokeWidth={0}>
                 {expenseByCategory.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
           <div className="grid grid-cols-2 gap-2 mt-3">
             {expenseByCategory.map(e => (
-              <div key={e.name} className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: e.color }} />
-                <span className="text-xs text-muted-foreground">{e.icon} {e.name}</span>
-                <span className="text-xs font-medium text-card-foreground ml-auto">{formatCurrency(e.value)}</span>
+              <div key={e.name} className="flex items-center gap-2 min-w-0">
+                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
+                <span className="text-xs text-muted-foreground truncate">{e.icon} {e.name}</span>
+                <span className="text-xs font-medium text-card-foreground ml-auto shrink-0">{formatCurrency(e.value)}</span>
               </div>
             ))}
           </div>
         </div>
+      ) : (
+        <div className="bg-card border border-border rounded-2xl p-8 text-center">
+          <p className="text-sm text-muted-foreground">No expense data to display</p>
+        </div>
       )}
+
       <div className="bg-card border border-border rounded-2xl p-4">
         <p className="text-sm font-semibold text-card-foreground mb-3">Spending Trend</p>
-        <ResponsiveContainer width="100%" height={160}>
+        <ResponsiveContainer width="100%" height={140}>
           <AreaChart data={chartData}>
             <defs>
               <linearGradient id="aExpGrad" x1="0" y1="0" x2="0" y2="1">
@@ -98,9 +105,9 @@ export default function Analytics() {
                 <stop offset="100%" stopColor="hsl(0,84%,60%)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={d => new Date(d).getDate().toString()} stroke="hsl(215,15%,55%)" />
+            <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={d => new Date(d).getDate().toString()} stroke="hsl(215,15%,55%)" interval="preserveStartEnd" />
             <YAxis hide />
-            <Tooltip contentStyle={{ backgroundColor: 'hsl(224,14%,12%)', border: 'none', borderRadius: 12, fontSize: 12 }} />
+            <Tooltip contentStyle={{ backgroundColor: 'hsl(224,14%,12%)', border: 'none', borderRadius: 12, fontSize: 11 }} />
             <Area type="monotone" dataKey="expense" stroke="hsl(0,84%,60%)" fill="url(#aExpGrad)" strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>

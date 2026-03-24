@@ -71,7 +71,6 @@ export function useAddTransaction() {
     }) => {
       if (!user) throw new Error('Not authenticated');
 
-      // Insert transaction
       const { error: txnError } = await supabase.from('transactions').insert({
         user_id: user.id,
         wallet_id: txn.wallet_id,
@@ -84,27 +83,48 @@ export function useAddTransaction() {
       });
       if (txnError) throw txnError;
 
-      // Update wallet balance
       if (txn.type === 'income') {
         const { data: wallet } = await supabase.from('wallets').select('balance').eq('id', txn.wallet_id).single();
-        if (wallet) {
-          await supabase.from('wallets').update({ balance: Number(wallet.balance) + txn.amount }).eq('id', txn.wallet_id);
-        }
+        if (wallet) await supabase.from('wallets').update({ balance: Number(wallet.balance) + txn.amount }).eq('id', txn.wallet_id);
       } else if (txn.type === 'expense') {
         const { data: wallet } = await supabase.from('wallets').select('balance').eq('id', txn.wallet_id).single();
-        if (wallet) {
-          await supabase.from('wallets').update({ balance: Number(wallet.balance) - txn.amount }).eq('id', txn.wallet_id);
-        }
+        if (wallet) await supabase.from('wallets').update({ balance: Number(wallet.balance) - txn.amount }).eq('id', txn.wallet_id);
       } else if (txn.type === 'transfer' && txn.to_wallet_id) {
         const { data: fromWallet } = await supabase.from('wallets').select('balance').eq('id', txn.wallet_id).single();
         const { data: toWallet } = await supabase.from('wallets').select('balance').eq('id', txn.to_wallet_id).single();
-        if (fromWallet) {
-          await supabase.from('wallets').update({ balance: Number(fromWallet.balance) - txn.amount }).eq('id', txn.wallet_id);
-        }
-        if (toWallet) {
-          await supabase.from('wallets').update({ balance: Number(toWallet.balance) + txn.amount }).eq('id', txn.to_wallet_id);
-        }
+        if (fromWallet) await supabase.from('wallets').update({ balance: Number(fromWallet.balance) - txn.amount }).eq('id', txn.wallet_id);
+        if (toWallet) await supabase.from('wallets').update({ balance: Number(toWallet.balance) + txn.amount }).eq('id', txn.to_wallet_id);
       }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['wallets'] });
+      queryClient.invalidateQueries({ queryKey: ['budgets'] });
+    },
+  });
+}
+
+export function useDeleteTransaction() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (txn: { id: string; wallet_id: string; to_wallet_id: string | null; amount: number; type: string }) => {
+      // Reverse wallet effects
+      if (txn.type === 'income') {
+        const { data: w } = await supabase.from('wallets').select('balance').eq('id', txn.wallet_id).single();
+        if (w) await supabase.from('wallets').update({ balance: Number(w.balance) - txn.amount }).eq('id', txn.wallet_id);
+      } else if (txn.type === 'expense') {
+        const { data: w } = await supabase.from('wallets').select('balance').eq('id', txn.wallet_id).single();
+        if (w) await supabase.from('wallets').update({ balance: Number(w.balance) + txn.amount }).eq('id', txn.wallet_id);
+      } else if (txn.type === 'transfer' && txn.to_wallet_id) {
+        const { data: fw } = await supabase.from('wallets').select('balance').eq('id', txn.wallet_id).single();
+        if (fw) await supabase.from('wallets').update({ balance: Number(fw.balance) + txn.amount }).eq('id', txn.wallet_id);
+        const { data: tw } = await supabase.from('wallets').select('balance').eq('id', txn.to_wallet_id).single();
+        if (tw) await supabase.from('wallets').update({ balance: Number(tw.balance) - txn.amount }).eq('id', txn.to_wallet_id);
+      }
+
+      const { error } = await supabase.from('transactions').delete().eq('id', txn.id);
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
@@ -128,6 +148,28 @@ export function useAddWallet() {
   });
 }
 
+export function useUpdateWallet() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string; name: string; type: string; icon: string; color: string }) => {
+      const { error } = await supabase.from('wallets').update(data).eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wallets'] }),
+  });
+}
+
+export function useDeleteWallet() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('wallets').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['wallets'] }),
+  });
+}
+
 export function useAddBudget() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
@@ -139,6 +181,17 @@ export function useAddBudget() {
         { ...budget, user_id: user.id },
         { onConflict: 'user_id,category_id,month' }
       );
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budgets'] }),
+  });
+}
+
+export function useDeleteBudget() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('budgets').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['budgets'] }),

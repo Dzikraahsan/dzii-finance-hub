@@ -1,15 +1,33 @@
-import { useWallets, useTransactions, useCategories } from '@/hooks/useFinanceData';
+import { useWallets, useTransactions, useCategories, useDeleteTransaction } from '@/hooks/useFinanceData';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { TrendingUp, TrendingDown, ArrowRight, Sparkles } from 'lucide-react';
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ProfileSheet from '@/components/ProfileSheet';
+import TransactionItem from '@/components/TransactionItem';
+import EditTransactionSheet from '@/components/EditTransactionSheet';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { data: wallets = [] } = useWallets();
   const { data: transactions = [] } = useTransactions();
   const { data: categories = [] } = useCategories();
+  const deleteTxn = useDeleteTransaction();
   const navigate = useNavigate();
+  const [showProfile, setShowProfile] = useState(false);
+  const [editTxn, setEditTxn] = useState<any>(null);
+  const [deletingTxn, setDeletingTxn] = useState<any>(null);
 
   const totalBalance = wallets.reduce((s, w) => s + Number(w.balance), 0);
   const thisMonth = new Date().toISOString().slice(0, 7);
@@ -21,10 +39,8 @@ export default function Dashboard() {
   const chartData = useMemo(() => {
     const days: Record<string, { income: number; expense: number }> = {};
     for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const key = d.toISOString().split('T')[0];
-      days[key] = { income: 0, expense: 0 };
+      const d = new Date(); d.setDate(d.getDate() - i);
+      days[d.toISOString().split('T')[0]] = { income: 0, expense: 0 };
     }
     transactions.forEach(t => {
       if (days[t.date]) {
@@ -35,7 +51,6 @@ export default function Dashboard() {
     return Object.entries(days).map(([date, vals]) => ({ date, ...vals }));
   }, [transactions]);
 
-  // Simple insight
   const insight = useMemo(() => {
     if (monthTxns.length === 0) return null;
     const topCatId = monthTxns.filter(t => t.type === 'expense')
@@ -46,6 +61,15 @@ export default function Dashboard() {
     return `Your top spending category this month is ${cat?.icon || ''} ${cat?.name || 'Unknown'} at ${formatCurrency(topEntry[1])}`;
   }, [monthTxns, categories]);
 
+  const handleDeleteConfirm = async () => {
+    if (!deletingTxn) return;
+    try {
+      await deleteTxn.mutateAsync(deletingTxn);
+      toast.success('Transaction deleted');
+    } catch { toast.error('Failed to delete'); }
+    setDeletingTxn(null);
+  };
+
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -53,13 +77,12 @@ export default function Dashboard() {
           <p className="text-muted-foreground text-sm">Good morning 👋</p>
           <h1 className="text-xl font-bold text-foreground">Dzii Finance</h1>
         </div>
-        <div className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm">D</div>
+        <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm active:scale-95 transition-transform">D</button>
       </div>
 
-      {/* Balance Card */}
       <div className="rounded-2xl gradient-primary p-5 glow-primary">
         <p className="text-primary-foreground/70 text-xs font-medium mb-1">Total Balance</p>
-        <p className="text-3xl font-bold text-primary-foreground tracking-tight">{formatCurrency(totalBalance)}</p>
+        <p className="text-2xl sm:text-3xl font-bold text-primary-foreground tracking-tight">{formatCurrency(totalBalance)}</p>
         <div className="flex gap-4 mt-4">
           <div className="flex items-center gap-1.5">
             <div className="w-7 h-7 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
@@ -82,7 +105,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Mini Chart */}
       <div className="rounded-2xl bg-card border border-border p-4">
         <p className="text-sm font-semibold text-card-foreground mb-3">Last 7 Days</p>
         <ResponsiveContainer width="100%" height={120}>
@@ -106,20 +128,18 @@ export default function Dashboard() {
         </ResponsiveContainer>
       </div>
 
-      {/* AI Insight */}
       {insight && (
         <div className="rounded-2xl bg-card border border-accent/20 p-4 flex gap-3 items-start glow-accent">
           <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
             <Sparkles className="w-4 h-4 text-accent" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-accent mb-1">AI Insight</p>
             <p className="text-sm text-card-foreground/80 leading-relaxed">{insight}</p>
           </div>
         </div>
       )}
 
-      {/* Recent Transactions */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-foreground">Recent Transactions</p>
@@ -133,23 +153,28 @@ export default function Dashboard() {
               const cat = categories.find(c => c.id === txn.category_id);
               const wallet = wallets.find(w => w.id === txn.wallet_id);
               return (
-                <div key={txn.id} className="flex items-center gap-3 bg-card rounded-xl p-3 border border-border">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg" style={{ backgroundColor: (cat?.color || '#666') + '20' }}>
-                    {cat?.icon || '❓'}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-card-foreground truncate">{cat?.name || 'Transfer'}</p>
-                    <p className="text-xs text-muted-foreground">{wallet?.name} · {formatDate(txn.date)}</p>
-                  </div>
-                  <p className={`text-sm font-semibold ${txn.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                    {txn.type === 'income' ? '+' : '-'}{formatCurrency(Number(txn.amount))}
-                  </p>
-                </div>
+                <TransactionItem key={txn.id} txn={txn as any} category={cat as any} wallet={wallet as any}
+                  onEdit={setEditTxn} onDelete={setDeletingTxn} />
               );
             })}
           </div>
         )}
       </div>
+
+      <ProfileSheet open={showProfile} onOpenChange={setShowProfile} />
+      <EditTransactionSheet open={!!editTxn} onOpenChange={v => { if (!v) setEditTxn(null); }} transaction={editTxn} />
+      <AlertDialog open={!!deletingTxn} onOpenChange={v => { if (!v) setDeletingTxn(null); }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Transaction</AlertDialogTitle>
+            <AlertDialogDescription>This will permanently delete this transaction and reverse the wallet balance changes.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
