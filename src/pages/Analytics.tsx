@@ -89,8 +89,21 @@ export default function Analytics() {
           <p className="text-sm font-semibold text-card-foreground mb-3">Expense by Category</p>
           <ResponsiveContainer width="100%" height={180}>
             <PieChart>
-              <Pie data={expenseByCategory} dataKey="value" cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} strokeWidth={0}>
-                {expenseByCategory.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              <Pie
+                data={expenseByCategory}
+                dataKey="value"
+                cx="50%"
+                cy="50%"
+                innerRadius={50}
+                outerRadius={75}
+                paddingAngle={3}
+                strokeWidth={0}
+                activeShape={null}
+                isAnimationActive={false}
+              >
+                {expenseByCategory.map((entry, i) => (
+                  <Cell key={i} fill={entry.color} />
+                ))}
               </Pie>
             </PieChart>
           </ResponsiveContainer>
