@@ -86,33 +86,46 @@ export default function Analytics() {
 
       {expenseByCategory.length > 0 ? (
         <div className="bg-card border border-border rounded-2xl p-4">
-          <p className="text-sm font-semibold text-card-foreground mb-3">Expense by Category</p>
-          <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie
-                data={expenseByCategory}
-                dataKey="value"
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={75}
-                paddingAngle={3}
-                strokeWidth={0}
-                activeShape={null}
-                isAnimationActive={false}
-              >
-                {expenseByCategory.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+          <p className="text-sm font-semibold text-card-foreground mb-3">
+            Expense by Category
+          </p>
+
+          <div className="pointer-events-none select-none">
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie
+                  data={expenseByCategory}
+                  dataKey="value"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={75}
+                  paddingAngle={3}
+                  stroke="none"
+                  isAnimationActive={false}
+                  activeIndex={-1}
+                >
+                  {expenseByCategory.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} stroke="none" />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
           <div className="grid grid-cols-2 gap-2 mt-3">
-            {expenseByCategory.map(e => (
+            {expenseByCategory.map((e) => (
               <div key={e.name} className="flex items-center gap-2 min-w-0">
-                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
-                <span className="text-xs text-muted-foreground truncate">{e.icon} {e.name}</span>
-                <span className="text-xs font-medium text-card-foreground ml-auto shrink-0">{formatCurrency(e.value)}</span>
+                <div
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{ backgroundColor: e.color }}
+                />
+                <span className="text-xs text-muted-foreground truncate">
+                  {e.icon} {e.name}
+                </span>
+                <span className="text-xs font-medium text-card-foreground ml-auto shrink-0">
+                  {formatCurrency(e.value)}
+                </span>
               </div>
             ))}
           </div>
