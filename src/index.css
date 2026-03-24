@@ -84,6 +84,9 @@
 }
 
 @layer base {
+  html {
+    scrollbar-width: none !important
+  }
   * {
     @apply border-border;
   }

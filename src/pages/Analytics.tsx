@@ -61,9 +61,9 @@ export default function Analytics() {
       </div>
       <div className="flex flex-col gap-3">
         {/* Income */}
-        <div className="bg-card border border-border border-blue-400 rounded-2xl p-4 flex flex-col items-center justify-center">
+        <div className="bg-card border border-primary rounded-2xl p-4 flex flex-col items-center justify-center">
           <p className="text-[11px] sm:text-xs text-muted-foreground">Income</p>
-          <p className="font-bold text-blue-400 text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
+          <p className="font-bold text-primary text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
             {formatCurrency(totalIncome)}
           </p>
         </div>
