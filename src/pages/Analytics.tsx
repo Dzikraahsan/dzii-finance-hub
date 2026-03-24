@@ -43,6 +43,11 @@ export default function Analytics() {
     return Object.entries(result).map(([date, expense]) => ({ date, expense }));
   }, [filtered, period]);
 
+  //  Format Rupiah Indonesia
+  const formatRupiah = (num) => {
+    return new Intl.NumberFormat("id-ID").format(num);
+  };
+
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
       <h1 className="text-xl font-bold text-foreground">Analytics</h1>
@@ -137,7 +142,10 @@ export default function Analytics() {
       )}
 
       <div className="bg-card border border-border rounded-2xl p-4">
-        <p className="text-sm font-semibold text-card-foreground mb-3">Spending Trend</p>
+        <p className="text-sm font-semibold text-card-foreground mb-3">
+          Spending Trend
+        </p>
+
         <ResponsiveContainer width="100%" height={140}>
           <AreaChart data={chartData}>
             <defs>
@@ -146,10 +154,46 @@ export default function Analytics() {
                 <stop offset="100%" stopColor="hsl(0,84%,60%)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={d => new Date(d).getDate().toString()} stroke="hsl(215,15%,55%)" interval="preserveStartEnd" />
-            <YAxis hide />
-            <Tooltip contentStyle={{ backgroundColor: 'hsl(224,14%,12%)', border: 'none', borderRadius: 12, fontSize: 11 }} />
-            <Area type="monotone" dataKey="expense" stroke="hsl(0,84%,60%)" fill="url(#aExpGrad)" strokeWidth={2} />
+
+            {/* X Axis */}
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 9 }}
+              tickFormatter={(d) => new Date(d).getDate().toString()}
+              stroke="hsl(215,15%,55%)"
+              interval="preserveStartEnd"
+            />
+
+            {/* Y Axis (optional tampil) */}
+            <YAxis
+              tick={{ fontSize: 9 }}
+              tickFormatter={(value) => formatRupiah(value)}
+              stroke="hsl(215,15%,55%)"
+              width={40}
+            />
+
+            {/* Tooltip (INI YANG PALING PENTING) */}
+            <Tooltip
+              formatter={(value) => [`Rp ${formatRupiah(value)}`, "Expense"]}
+              contentStyle={{
+                backgroundColor: "hsl(224,14%,12%)",
+                border: "none",
+                borderRadius: 12,
+                fontSize: 11,
+              }}
+              labelFormatter={(label) => {
+                const d = new Date(label);
+                return `${d.getDate()}/${d.getMonth() + 1}`;
+              }}
+            />
+
+            <Area
+              type="monotone"
+              dataKey="expense"
+              stroke="hsl(0,84%,60%)"
+              fill="url(#aExpGrad)"
+              strokeWidth={2}
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>

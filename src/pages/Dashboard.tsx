@@ -70,6 +70,11 @@ export default function Dashboard() {
     setDeletingTxn(null);
   };
 
+  // Format Rupiah Indonesia
+  const formatRupiah = (num) => {
+    return new Intl.NumberFormat("id-ID").format(num);
+  };
+
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -121,7 +126,23 @@ export default function Dashboard() {
             </defs>
             <XAxis dataKey="date" hide />
             <YAxis hide />
-            <Tooltip contentStyle={{ backgroundColor: 'hsl(224,14%,12%)', border: 'none', borderRadius: 12, fontSize: 12 }} labelStyle={{ color: 'hsl(215,15%,55%)' }} />
+            <Tooltip
+              formatter={(value, name) => [
+                `Rp ${formatRupiah(value)}`,
+                name === "income" ? "Income" : "Expense"
+              ]}
+              labelFormatter={(label) => {
+                const d = new Date(label);
+                return `${d.getDate()}/${d.getMonth() + 1}`;
+              }}
+              contentStyle={{
+                backgroundColor: "hsl(224,14%,12%)",
+                border: "none",
+                borderRadius: 12,
+                fontSize: 12
+              }}
+              labelStyle={{ color: "hsl(215,15%,55%)" }}
+            />
             <Area type="monotone" dataKey="income" stroke="hsl(142,76%,36%)" fill="url(#incGrad)" strokeWidth={2} />
             <Area type="monotone" dataKey="expense" stroke="hsl(0,84%,60%)" fill="url(#expGrad)" strokeWidth={2} />
           </AreaChart>
