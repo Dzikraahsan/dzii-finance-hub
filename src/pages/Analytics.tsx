@@ -57,15 +57,15 @@ export default function Analytics() {
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-card border border-border rounded-2xl p-3 text-center">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Income</p>
-          <p className="text-sm sm:text-base font-bold text-success">{formatCurrency(totalIncome)}</p>
+          <p className="text-[12px] text-center sm:text-base font-bold text-success">{formatCurrency(totalIncome)}</p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-3 text-center">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Expense</p>
-          <p className="text-sm sm:text-base font-bold text-destructive">{formatCurrency(totalExpense)}</p>
+          <p className="text-[12px] text-center sm:text-base font-bold text-destructive">{formatCurrency(totalExpense)}</p>
         </div>
         <div className="bg-card border border-border rounded-2xl p-3 text-center">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Net</p>
-          <p className={`text-sm sm:text-base font-bold ${totalIncome - totalExpense >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(totalIncome - totalExpense)}</p>
+          <p className={`text-[12px] text-center sm:text-base font-bold ${totalIncome - totalExpense >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(totalIncome - totalExpense)}</p>
         </div>
       </div>
 
