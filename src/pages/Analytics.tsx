@@ -54,18 +54,33 @@ export default function Analytics() {
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <div className="bg-card border border-border rounded-2xl p-3 text-center">
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Income</p>
-          <p className="text-[12px] text-center sm:text-base font-bold text-success">{formatCurrency(totalIncome)}</p>
+      <div className="flex flex-col gap-3">
+        {/* Income */}
+        <div className="bg-card border border-border border-blue-500 rounded-2xl p-4 flex flex-col items-center justify-center">
+          <p className="text-[11px] sm:text-xs text-muted-foreground">Income</p>
+          <p className="font-bold text-blue-500 text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
+            {formatCurrency(totalIncome)}
+          </p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-3 text-center">
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Expense</p>
-          <p className="text-[12px] text-center sm:text-base font-bold text-destructive">{formatCurrency(totalExpense)}</p>
+
+        {/* Expense */}
+        <div className="bg-card border border-border border-red-500 rounded-2xl p-4 flex flex-col items-center justify-center">
+          <p className="text-[11px] sm:text-xs text-muted-foreground">Expense</p>
+          <p className="font-bold text-red-500 text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
+            {formatCurrency(totalExpense)}
+          </p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-3 text-center">
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Net</p>
-          <p className={`text-[12px] text-center sm:text-base font-bold ${totalIncome - totalExpense >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(totalIncome - totalExpense)}</p>
+
+        {/* Net */}
+        <div className="bg-card border border-border border-green-500 rounded-2xl p-4 flex flex-col items-center justify-center">
+          <p className="text-[11px] sm:text-xs text-muted-foreground">Net</p>
+          <p
+            className={`font-bold text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words ${
+              totalIncome - totalExpense >= 0 ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {formatCurrency(totalIncome - totalExpense)}
+          </p>
         </div>
       </div>
 
