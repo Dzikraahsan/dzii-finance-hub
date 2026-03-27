@@ -1,6 +1,6 @@
 import { useWallets, useTransactions, useCategories, useDeleteTransaction } from '@/hooks/useFinanceData';
 import { formatCurrency, formatDate } from '@/lib/format';
-import { TrendingUp, TrendingDown, ArrowRight, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, Sparkles, EyeOff, Eye } from 'lucide-react';
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -35,6 +35,8 @@ export default function Dashboard() {
   const totalIncome = monthTxns.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
   const totalExpense = monthTxns.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
   const recentTxns = transactions.slice(0, 5);
+
+  const [showBalance, setShowBalance] = useState(true);
 
   const chartData = useMemo(() => {
     const days: Record<string, { income: number; expense: number }> = {};
@@ -80,26 +82,63 @@ export default function Dashboard() {
         <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm active:scale-95 transition-transform">D</button>
       </div>
 
-      <div className="rounded-2xl gradient-primary p-5 glow-primary animate-card-enter">
-        <p className="text-primary-foreground/70 text-xs font-medium mb-1">Total Balance</p>
-        <p className="text-2xl sm:text-3xl font-bold text-primary-foreground tracking-tight animate-number">{formatCurrency(totalBalance)}</p>
+      <div className="rounded-2xl gradient-primary p-5 glow-primary">
+        <div className="flex items-center justify-between">
+          <p className="text-primary-foreground/70 text-xs font-medium mb-1">
+            Total Balance
+          </p>
+
+          <button
+            onClick={() => setShowBalance(!showBalance)}
+            className="text-primary-foreground transition-all duration-200 active:scale-90 hover:scale-110"
+          >
+            <span className="transition-all duration-300 ease-in-out inline-block">
+              {showBalance ? <EyeOff size={16} /> : <Eye size={16} />}
+            </span>
+          </button>
+        </div>
+
+        <p className="text-2xl sm:text-3xl font-bold text-primary-foreground tracking-tight transition-all duration-300 ease-in-out">
+          <span
+            key={showBalance ? "show" : "hide"}
+            className="inline-block animate-[fadeScale_0.25s_ease]"
+          >
+            {showBalance ? formatCurrency(totalBalance) : "****"}
+          </span>
+        </p>
+
         <div className="flex gap-4 mt-4">
-        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
             <div className="w-7 h-7 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>
               <p className="text-[10px] text-primary-foreground/60">Income</p>
-              <p className="text-xs font-semibold text-primary-foreground animate-number">{formatCurrency(totalIncome)}</p>
+              <p className="text-xs font-semibold text-primary-foreground">
+                <span
+                  key={showBalance ? "inc-show" : "inc-hide"}
+                  className="inline-block animate-[fadeScale_0.25s_ease]"
+                >
+                  {showBalance ? formatCurrency(totalIncome) : "****"}
+                </span>
+              </p>
             </div>
           </div>
+
           <div className="flex items-center gap-1.5">
             <div className="w-7 h-7 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
               <TrendingDown className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>
               <p className="text-[10px] text-primary-foreground/60">Expense</p>
-              <p className="text-xs font-semibold text-primary-foreground animate-number">{formatCurrency(totalExpense)}</p>
+              <p className="text-xs font-semibold text-primary-foreground">
+                <span
+                  key={showBalance ? "exp-show" : "exp-hide"}
+                  className="inline-block animate-[fadeScale_0.25s_ease]"
+                >
+                  {showBalance ? formatCurrency(totalExpense) : "****"}
+                </span>
+              </p>
             </div>
           </div>
         </div>
