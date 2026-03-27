@@ -42,7 +42,7 @@ export default function Dashboard() {
   const getGreeting = () => {
   const now = new Date();
 
-  // ambil jam WIB (GMT+7)
+  // WIB (GMT+7)
   const wibHour = new Date(
     now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
   ).getHours();
@@ -95,6 +95,11 @@ export default function Dashboard() {
       toast.success('Transaction deleted');
     } catch { toast.error('Failed to delete'); }
     setDeletingTxn(null);
+  };
+
+  // Format Indonesia Rupiah
+  const formatRupiah = (num) => {
+    return new Intl.NumberFormat("id-ID").format(num);
   };
 
   return (
@@ -185,7 +190,23 @@ export default function Dashboard() {
             </defs>
             <XAxis dataKey="date" hide />
             <YAxis hide />
-            <Tooltip contentStyle={{ backgroundColor: 'hsl(224,14%,12%)', border: 'none', borderRadius: 12, fontSize: 12 }} labelStyle={{ color: 'hsl(215,15%,55%)' }} />
+            <Tooltip
+              formatter={(value, name) => [
+                `Rp ${formatRupiah(value)}`,
+                name === "income" ? "Income" : "Expense"
+              ]}
+              labelFormatter={(label) => {
+                const d = new Date(label);
+                return `${d.getDate()}/${d.getMonth() + 1}`;
+              }}
+              contentStyle={{
+                backgroundColor: 'hsl(224,14%,12%)',
+                border: 'none',
+                borderRadius: 12,
+                fontSize: 12
+              }}
+              labelStyle={{ color: 'hsl(215,15%,55%)' }}
+            />
             <Area type="monotone" dataKey="income" stroke="hsl(142,76%,36%)" fill="url(#incGrad)" strokeWidth={2} />
             <Area type="monotone" dataKey="expense" stroke="hsl(0,84%,60%)" fill="url(#expGrad)" strokeWidth={2} />
           </AreaChart>
