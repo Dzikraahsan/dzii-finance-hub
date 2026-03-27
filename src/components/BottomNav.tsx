@@ -29,8 +29,8 @@ export default function BottomNav() {
               const active = location.pathname === path;
               return (
                 <NavLink key={path} to={path}
-                  className={`flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-lg transition-colors min-w-[40px] ${active ? 'text-primary' : 'text-muted-foreground'}`}>
-                  <Icon className={`w-5 h-5 ${active ? 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]' : ''}`} />
+                  className={`nav-tab flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-lg min-w-[40px] ${active ? 'text-primary nav-tab-active' : 'text-muted-foreground'}`}>
+                  <Icon className={`w-5 h-5 icon-transition ${active ? 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]' : ''}`} />
                   <span className="text-[9px] font-medium">{label}</span>
                 </NavLink>
               );
@@ -39,17 +39,17 @@ export default function BottomNav() {
             {/* FAB */}
             <button
               onClick={() => setShowAdd(true)}
-              className="w-12 h-12 -mt-5 rounded-full gradient-primary flex items-center justify-center shadow-lg transition-transform active:scale-90"
+              className="w-12 h-12 -mt-5 rounded-full gradient-primary flex items-center justify-center shadow-lg btn-press"
             >
-              <Plus className="w-5 h-5 text-primary-foreground" />
+              <Plus className="w-5 h-5 text-primary-foreground icon-transition" />
             </button>
 
             {rightTabs.map(({ path, icon: Icon, label }) => {
               const active = location.pathname === path;
               return (
                 <NavLink key={path} to={path}
-                  className={`flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-lg transition-colors min-w-[40px] ${active ? 'text-primary' : 'text-muted-foreground'}`}>
-                  <Icon className={`w-5 h-5 ${active ? 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]' : ''}`} />
+                  className={`nav-tab flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-lg min-w-[40px] ${active ? 'text-primary nav-tab-active' : 'text-muted-foreground'}`}>
+                  <Icon className={`w-5 h-5 icon-transition ${active ? 'drop-shadow-[0_0_6px_hsl(var(--primary)/0.5)]' : ''}`} />
                   <span className="text-[9px] font-medium">{label}</span>
                 </NavLink>
               );

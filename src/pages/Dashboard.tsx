@@ -80,17 +80,17 @@ export default function Dashboard() {
         <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm active:scale-95 transition-transform">D</button>
       </div>
 
-      <div className="rounded-2xl gradient-primary p-5 glow-primary">
+      <div className="rounded-2xl gradient-primary p-5 glow-primary animate-card-enter">
         <p className="text-primary-foreground/70 text-xs font-medium mb-1">Total Balance</p>
-        <p className="text-2xl sm:text-3xl font-bold text-primary-foreground tracking-tight">{formatCurrency(totalBalance)}</p>
+        <p className="text-2xl sm:text-3xl font-bold text-primary-foreground tracking-tight animate-number">{formatCurrency(totalBalance)}</p>
         <div className="flex gap-4 mt-4">
-          <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
             <div className="w-7 h-7 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-primary-foreground" />
             </div>
             <div>
               <p className="text-[10px] text-primary-foreground/60">Income</p>
-              <p className="text-xs font-semibold text-primary-foreground">{formatCurrency(totalIncome)}</p>
+              <p className="text-xs font-semibold text-primary-foreground animate-number">{formatCurrency(totalIncome)}</p>
             </div>
           </div>
           <div className="flex items-center gap-1.5">
@@ -99,13 +99,13 @@ export default function Dashboard() {
             </div>
             <div>
               <p className="text-[10px] text-primary-foreground/60">Expense</p>
-              <p className="text-xs font-semibold text-primary-foreground">{formatCurrency(totalExpense)}</p>
+              <p className="text-xs font-semibold text-primary-foreground animate-number">{formatCurrency(totalExpense)}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl bg-card border border-border p-4">
+      <div className="rounded-2xl bg-card border border-border p-4 animate-card-enter stagger-2">
         <p className="text-sm font-semibold text-card-foreground mb-3">Last 7 Days</p>
         <ResponsiveContainer width="100%" height={120}>
           <AreaChart data={chartData}>
@@ -129,7 +129,7 @@ export default function Dashboard() {
       </div>
 
       {insight && (
-        <div className="rounded-2xl bg-card border border-accent/20 p-4 flex gap-3 items-start glow-accent">
+        <div className="rounded-2xl bg-card border border-accent/20 p-4 flex gap-3 items-start glow-accent animate-card-enter stagger-3">
           <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
             <Sparkles className="w-4 h-4 text-accent" />
           </div>
@@ -149,12 +149,14 @@ export default function Dashboard() {
           <p className="text-sm text-muted-foreground text-center py-8">No transactions yet. Tap + to add one!</p>
         ) : (
           <div className="space-y-2">
-            {recentTxns.map(txn => {
+            {recentTxns.map((txn, i) => {
               const cat = categories.find(c => c.id === txn.category_id);
               const wallet = wallets.find(w => w.id === txn.wallet_id);
               return (
-                <TransactionItem key={txn.id} txn={txn as any} category={cat as any} wallet={wallet as any}
-                  onEdit={setEditTxn} onDelete={setDeletingTxn} />
+                <div key={txn.id} className={`animate-list-item stagger-${Math.min(i + 1, 10)}`}>
+                  <TransactionItem txn={txn as any} category={cat as any} wallet={wallet as any}
+                    onEdit={setEditTxn} onDelete={setDeletingTxn} />
+                </div>
               );
             })}
           </div>

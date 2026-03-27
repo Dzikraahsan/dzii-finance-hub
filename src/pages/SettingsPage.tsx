@@ -44,8 +44,8 @@ export default function SettingsPage() {
       <h1 className="text-xl font-bold text-foreground">Settings</h1>
 
       {/* User info */}
-      <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold">
+      <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3 animate-card-enter">
+        <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold animate-value-pop">
           {user?.email?.[0].toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
@@ -55,7 +55,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Theme Toggle */}
-      <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
+      <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between animate-card-enter stagger-2">
         <div className="flex items-center gap-3">
           {darkMode ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-warning" />}
           <div>
@@ -69,7 +69,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Export */}
-      <button onClick={exportCSV} className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-3 text-left active:scale-[0.98] transition-transform">
+      <button onClick={exportCSV} className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-3 text-left btn-press animate-card-enter stagger-3">
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Download className="w-5 h-5 text-primary" /></div>
         <div className="flex-1">
           <p className="text-sm font-medium text-card-foreground">Export Data</p>
@@ -79,7 +79,7 @@ export default function SettingsPage() {
       </button>
 
       {/* Sign Out */}
-      <button onClick={handleSignOut} className="w-full bg-card border border-destructive/20 rounded-2xl p-4 flex items-center gap-3 text-left active:scale-[0.98] transition-transform">
+      <button onClick={handleSignOut} className="w-full bg-card border border-destructive/20 rounded-2xl p-4 flex items-center gap-3 text-left btn-press animate-card-enter stagger-4">
         <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center"><LogOut className="w-5 h-5 text-destructive" /></div>
         <div className="flex-1">
           <p className="text-sm font-medium text-destructive">Sign Out</p>

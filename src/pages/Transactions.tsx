@@ -85,7 +85,7 @@ export default function Transactions() {
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0" />
         </div>
         <button onClick={() => setShowFilter(true)}
-          className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-all ${active ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'}`}>
+          className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 btn-press ${active ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'}`}>
           <SlidersHorizontal className={`w-4 h-4 ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
         </button>
       </div>
@@ -105,12 +105,14 @@ export default function Transactions() {
             <div key={date}>
               <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{formatDate(date)}</p>
               <div className="space-y-2">
-                {txns.map(txn => {
+                {txns.map((txn, i) => {
                   const cat = categories.find(c => c.id === txn.category_id);
                   const wallet = wallets.find(w => w.id === txn.wallet_id);
                   return (
-                    <TransactionItem key={txn.id} txn={txn as any} category={cat as any} wallet={wallet as any}
-                      onEdit={setEditTxn} onDelete={setDeletingTxn} />
+                    <div key={txn.id} className={`animate-list-item stagger-${Math.min(i + 1, 10)}`}>
+                      <TransactionItem txn={txn as any} category={cat as any} wallet={wallet as any}
+                        onEdit={setEditTxn} onDelete={setDeletingTxn} />
+                    </div>
                   );
                 })}
               </div>

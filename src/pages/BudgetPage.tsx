@@ -58,7 +58,7 @@ export default function BudgetPage() {
             const status = pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
             const barColor = status === 'over' ? 'bg-destructive' : status === 'warn' ? 'bg-warning' : 'bg-success';
             return (
-              <div key={budget.id} className={`bg-card border border-border rounded-2xl p-4 ${status === 'over' ? 'glow-destructive' : ''}`}>
+              <div key={budget.id} className={`bg-card border border-border rounded-2xl p-4 card-interactive animate-list-item stagger-${Math.min(budgetsWithUsage.indexOf(budget) + 1, 10)} ${status === 'over' ? 'glow-destructive' : ''}`}>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: (cat?.color || '#666') + '20' }}>{cat?.icon}</div>
                   <div className="flex-1 min-w-0">
