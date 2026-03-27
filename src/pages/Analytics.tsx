@@ -43,11 +43,6 @@ export default function Analytics() {
     return Object.entries(result).map(([date, expense]) => ({ date, expense }));
   }, [filtered, period]);
 
-  //  Format Rupiah Indonesia
-  const formatRupiah = (num) => {
-    return new Intl.NumberFormat("id-ID").format(num);
-  };
-
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
       <h1 className="text-xl font-bold text-foreground">Analytics</h1>
@@ -59,78 +54,37 @@ export default function Analytics() {
           </button>
         ))}
       </div>
-      <div className="flex flex-col gap-3">
-        {/* Income */}
-        <div className="bg-card border border-primary rounded-2xl p-4 flex flex-col items-center justify-center">
-          <p className="text-[11px] sm:text-xs text-muted-foreground">Income</p>
-          <p className="font-bold text-primary text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
-            {formatCurrency(totalIncome)}
-          </p>
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+        <div className="bg-card border border-border rounded-2xl p-3 text-center animate-card-enter stagger-1">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Income</p>
+          <p className="text-sm sm:text-base font-bold text-success animate-number">{formatCurrency(totalIncome)}</p>
         </div>
-
-        {/* Expense */}
-        <div className="bg-card border border-border border-red-400 rounded-2xl p-4 flex flex-col items-center justify-center">
-          <p className="text-[11px] sm:text-xs text-muted-foreground">Expense</p>
-          <p className="font-bold text-red-400 text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words">
-            {formatCurrency(totalExpense)}
-          </p>
+        <div className="bg-card border border-border rounded-2xl p-3 text-center animate-card-enter stagger-2">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Expense</p>
+          <p className="text-sm sm:text-base font-bold text-destructive animate-number">{formatCurrency(totalExpense)}</p>
         </div>
-
-        {/* Net */}
-        <div className="bg-card border border-border border-green-400 rounded-2xl p-4 flex flex-col items-center justify-center">
-          <p className="text-[11px] sm:text-xs text-muted-foreground">Net</p>
-          <p
-            className={`font-bold text-center tracking-tight leading-tight text-[clamp(12px,4vw,20px)] break-words ${
-              totalIncome - totalExpense >= 0 ? 'text-green-400' : 'text-red-400'
-            }`}
-          >
-            {formatCurrency(totalIncome - totalExpense)}
-          </p>
+        <div className="bg-card border border-border rounded-2xl p-3 text-center animate-card-enter stagger-3">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">Net</p>
+          <p className={`text-sm sm:text-base font-bold animate-number ${totalIncome - totalExpense >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(totalIncome - totalExpense)}</p>
         </div>
       </div>
 
       {expenseByCategory.length > 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-4">
-          <p className="text-sm font-semibold text-card-foreground mb-3">
-            Expense by Category
-          </p>
-
-          <div className="pointer-events-none select-none">
-            <ResponsiveContainer width="100%" height={180}>
-              <PieChart>
-                <Pie
-                  data={expenseByCategory}
-                  dataKey="value"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={75}
-                  paddingAngle={3}
-                  stroke="none"
-                  isAnimationActive={false}
-                  activeIndex={-1}
-                >
-                  {expenseByCategory.map((entry, i) => (
-                    <Cell key={i} fill={entry.color} stroke="none" />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
+        <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-4">
+          <p className="text-sm font-semibold text-card-foreground mb-3">Expense by Category</p>
+          <ResponsiveContainer width="100%" height={180}>
+            <PieChart>
+              <Pie data={expenseByCategory} dataKey="value" cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} strokeWidth={0}>
+                {expenseByCategory.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
           <div className="grid grid-cols-2 gap-2 mt-3">
-            {expenseByCategory.map((e) => (
+            {expenseByCategory.map(e => (
               <div key={e.name} className="flex items-center gap-2 min-w-0">
-                <div
-                  className="w-3 h-3 rounded-full shrink-0"
-                  style={{ backgroundColor: e.color }}
-                />
-                <span className="text-xs text-muted-foreground truncate">
-                  {e.icon} {e.name}
-                </span>
-                <span className="text-xs font-medium text-card-foreground ml-auto shrink-0">
-                  {formatCurrency(e.value)}
-                </span>
+                <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
+                <span className="text-xs text-muted-foreground truncate">{e.icon} {e.name}</span>
+                <span className="text-xs font-medium text-card-foreground ml-auto shrink-0">{formatCurrency(e.value)}</span>
               </div>
             ))}
           </div>
@@ -141,11 +95,8 @@ export default function Analytics() {
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-2xl p-4">
-        <p className="text-sm font-semibold text-card-foreground mb-3">
-          Spending Trend
-        </p>
-
+      <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-5">
+        <p className="text-sm font-semibold text-card-foreground mb-3">Spending Trend</p>
         <ResponsiveContainer width="100%" height={140}>
           <AreaChart data={chartData}>
             <defs>
@@ -154,46 +105,10 @@ export default function Analytics() {
                 <stop offset="100%" stopColor="hsl(0,84%,60%)" stopOpacity={0} />
               </linearGradient>
             </defs>
-
-            {/* X Axis */}
-            <XAxis
-              dataKey="date"
-              tick={{ fontSize: 9 }}
-              tickFormatter={(d) => new Date(d).getDate().toString()}
-              stroke="hsl(215,15%,55%)"
-              interval="preserveStartEnd"
-            />
-
-            {/* Y Axis (optional tampil) */}
-            <YAxis
-              tick={{ fontSize: 9 }}
-              tickFormatter={(value) => formatRupiah(value)}
-              stroke="hsl(215,15%,55%)"
-              width={40}
-            />
-
-            {/* Tooltip (INI YANG PALING PENTING) */}
-            <Tooltip
-              formatter={(value) => [`Rp ${formatRupiah(value)}`, "Expense"]}
-              contentStyle={{
-                backgroundColor: "hsl(224,14%,12%)",
-                border: "none",
-                borderRadius: 12,
-                fontSize: 11,
-              }}
-              labelFormatter={(label) => {
-                const d = new Date(label);
-                return `${d.getDate()}/${d.getMonth() + 1}`;
-              }}
-            />
-
-            <Area
-              type="monotone"
-              dataKey="expense"
-              stroke="hsl(0,84%,60%)"
-              fill="url(#aExpGrad)"
-              strokeWidth={2}
-            />
+            <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={d => new Date(d).getDate().toString()} stroke="hsl(215,15%,55%)" interval="preserveStartEnd" />
+            <YAxis hide />
+            <Tooltip contentStyle={{ backgroundColor: 'hsl(224,14%,12%)', border: 'none', borderRadius: 12, fontSize: 11 }} />
+            <Area type="monotone" dataKey="expense" stroke="hsl(0,84%,60%)" fill="url(#aExpGrad)" strokeWidth={2} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

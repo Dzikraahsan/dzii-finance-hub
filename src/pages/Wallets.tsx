@@ -35,17 +35,17 @@ export default function Wallets() {
           <Plus className="w-4 h-4 text-primary" />
         </button>
       </div>
-      <div className="bg-card border border-border rounded-2xl p-5 text-center">
+      <div className="bg-card border border-border rounded-2xl p-5 text-center animate-card-enter">
         <p className="text-xs text-muted-foreground mb-1">Total Balance</p>
-        <p className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">{formatCurrency(total)}</p>
+        <p className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground animate-number">{formatCurrency(total)}</p>
         <div className="flex items-center justify-center gap-1 mt-2">
           <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
           <span className="text-xs text-muted-foreground">{wallets.length} wallets</span>
         </div>
       </div>
       <div className="space-y-3">
-        {wallets.map(wallet => (
-          <div key={wallet.id} className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3 transition-all">
+        {wallets.map((wallet, i) => (
+          <div key={wallet.id} className={`bg-card border border-border rounded-2xl p-4 flex items-center gap-3 card-interactive animate-list-item stagger-${Math.min(i + 1, 10)}`}>
             <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: wallet.color + '20' }}>{wallet.icon}</div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-card-foreground truncate">{wallet.name}</p>

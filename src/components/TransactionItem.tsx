@@ -38,7 +38,7 @@ export default function TransactionItem({ txn, category, wallet, onEdit, onDelet
 
   return (
     <div
-      className="flex items-center gap-3 bg-card rounded-xl p-3 border border-border transition-all"
+      className="flex items-center gap-3 bg-card rounded-xl p-3 border border-border card-interactive"
       onClick={() => setShowActions(!showActions)}
     >
       <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0"
