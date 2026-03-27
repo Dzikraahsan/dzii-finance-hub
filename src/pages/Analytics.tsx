@@ -54,31 +54,57 @@ export default function Analytics() {
           </button>
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        <div className="bg-card border border-border rounded-2xl p-3 text-center animate-card-enter stagger-1">
+      <div className="flex flex-col gap-2 sm:gap-3">
+        <div className="bg-card border border-primary rounded-lg p-3 text-center animate-card-enter stagger-1">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Income</p>
-          <p className="text-sm sm:text-base font-bold text-success animate-number">{formatCurrency(totalIncome)}</p>
+          <p className="text-sm sm:text-base font-bold text-primary animate-number">
+            {formatCurrency(totalIncome)}
+          </p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-3 text-center animate-card-enter stagger-2">
+
+        <div className="bg-card border border-destructive rounded-lg p-3 text-center animate-card-enter stagger-2">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Expense</p>
-          <p className="text-sm sm:text-base font-bold text-destructive animate-number">{formatCurrency(totalExpense)}</p>
+          <p className="text-sm sm:text-base font-bold text-destructive animate-number">
+            {formatCurrency(totalExpense)}
+          </p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-3 text-center animate-card-enter stagger-3">
+
+        <div className="bg-card border border-success rounded-lg p-3 text-center animate-card-enter stagger-3">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Net</p>
-          <p className={`text-sm sm:text-base font-bold animate-number ${totalIncome - totalExpense >= 0 ? 'text-success' : 'text-destructive'}`}>{formatCurrency(totalIncome - totalExpense)}</p>
+          <p
+            className={`text-sm sm:text-base font-bold animate-number ${
+              totalIncome - totalExpense >= 0 ? "text-success" : "text-destructive"
+            }`}
+          >
+            {formatCurrency(totalIncome - totalExpense)}
+          </p>
         </div>
       </div>
 
       {expenseByCategory.length > 0 ? (
         <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-4">
           <p className="text-sm font-semibold text-card-foreground mb-3">Expense by Category</p>
-          <ResponsiveContainer width="100%" height={180}>
-            <PieChart>
-              <Pie data={expenseByCategory} dataKey="value" cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} strokeWidth={0}>
-                {expenseByCategory.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+            <div className="outline-none focus:outline-none active:outline-none">
+              <ResponsiveContainer width="100%" height={180}>
+                <PieChart>
+                  <Pie
+                    data={expenseByCategory}
+                    dataKey="value"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={75}
+                    paddingAngle={3}
+                    strokeWidth={0}
+                    isAnimationActive={false}
+                  >
+                    {expenseByCategory.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           <div className="grid grid-cols-2 gap-2 mt-3">
             {expenseByCategory.map(e => (
               <div key={e.name} className="flex items-center gap-2 min-w-0">

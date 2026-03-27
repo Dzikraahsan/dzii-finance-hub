@@ -38,6 +38,31 @@ export default function Dashboard() {
 
   const [showBalance, setShowBalance] = useState(true);
 
+  // Greetings
+  const getGreeting = () => {
+  const now = new Date();
+
+  // ambil jam WIB (GMT+7)
+  const wibHour = new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
+  ).getHours();
+
+  // 01:00 - 10:59 → morning
+  if (wibHour >= 1 && wibHour <= 10) return "Good morning 👋";
+
+  // 11:00 - 14:59 → afternoon
+  if (wibHour >= 11 && wibHour <= 14) return "Good afternoon ☀️";
+
+  // 15:00 - 18:59 → evening
+  if (wibHour >= 15 && wibHour <= 18) return "Good evening 🌇";
+
+  // 19:00 - 23:59 → night
+  if (wibHour >= 19 && wibHour <= 23) return "Good night 🌙";
+
+  // 00:00 → night
+  return "Good night 🌙";
+};
+
   const chartData = useMemo(() => {
     const days: Record<string, { income: number; expense: number }> = {};
     for (let i = 6; i >= 0; i--) {
@@ -76,7 +101,7 @@ export default function Dashboard() {
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-muted-foreground text-sm">Good morning 👋</p>
+          <p className="text-muted-foreground text-sm">{getGreeting()}</p>
           <h1 className="text-xl font-bold text-foreground">Dzii Finance</h1>
         </div>
         <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm active:scale-95 transition-transform">D</button>
