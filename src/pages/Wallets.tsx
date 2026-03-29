@@ -49,7 +49,9 @@ export default function Wallets() {
             <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: wallet.color + '20' }}>{wallet.icon}</div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-card-foreground truncate">{wallet.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">{wallet.type.replace('-', ' ')}</p>
+              <p className="text-xs text-muted-foreground capitalize">
+                {wallet.type.replace('-', ' ')}{(wallet as any).provider ? ` · ${(wallet as any).provider}` : ''}
+              </p>
             </div>
             <p className="text-sm font-semibold text-card-foreground shrink-0">{formatCurrency(Number(wallet.balance))}</p>
             <div className="flex gap-1 shrink-0">

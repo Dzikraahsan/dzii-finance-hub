@@ -101,7 +101,11 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                     (walletId || wallets[0]?.id) === w.id ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-card text-card-foreground border border-border'
                   }`}>
-                  <span>{w.icon}</span><span>{w.name}</span>
+                  <span>{w.icon}</span>
+                  <span className="flex flex-col items-start">
+                    <span>{w.name}</span>
+                    <span className="text-[10px] opacity-60 capitalize">{w.type.replace('-', ' ')}</span>
+                  </span>
                 </button>
               ))}
             </div>
@@ -117,7 +121,11 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                       toWalletId === w.id ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-card text-card-foreground border border-border'
                     }`}>
-                    <span>{w.icon}</span><span>{w.name}</span>
+                    <span>{w.icon}</span>
+                    <span className="flex flex-col items-start">
+                      <span>{w.name}</span>
+                      <span className="text-[10px] opacity-60 capitalize">{w.type.replace('-', ' ')}</span>
+                    </span>
                   </button>
                 ))}
               </div>

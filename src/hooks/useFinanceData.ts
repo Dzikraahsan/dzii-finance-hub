@@ -139,7 +139,7 @@ export function useAddWallet() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (wallet: { name: string; type: string; balance: number; icon: string; color: string }) => {
+    mutationFn: async (wallet: { name: string; type: string; balance: number; icon: string; color: string; account_number?: string | null; provider?: string | null }) => {
       if (!user) throw new Error('Not authenticated');
       const { error } = await supabase.from('wallets').insert({ ...wallet, user_id: user.id });
       if (error) throw error;
@@ -151,7 +151,7 @@ export function useAddWallet() {
 export function useUpdateWallet() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, ...data }: { id: string; name: string; type: string; icon: string; color: string }) => {
+    mutationFn: async ({ id, ...data }: { id: string; name: string; type: string; icon: string; color: string; balance: number; account_number?: string | null; provider?: string | null }) => {
       const { error } = await supabase.from('wallets').update(data).eq('id', id);
       if (error) throw error;
     },
