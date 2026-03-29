@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 export default function Analytics() {
   const { data: transactions = [] } = useTransactions();
   const { data: categories = [] } = useCategories();
-  const [period, setPeriod] = useState<'7d' | '30d' | 'all'>('30d');
+  const [period, setPeriod] = useState<'7d' | '30d' | 'all'>('7d');
 
   const filtered = useMemo(() => {
     if (period === 'all') return transactions;
@@ -31,7 +31,7 @@ export default function Analytics() {
   const totalExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
 
   const chartData = useMemo(() => {
-    const days = period === '7d' ? 7 : period === '30d' ? 30 : 30;
+    const days = period === '7d' ? 7 : period === '30d' ? 30 : 7;
     const result: Record<string, number> = {};
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
