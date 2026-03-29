@@ -2,7 +2,7 @@ import { useWallets, useTransactions, useCategories, useDeleteTransaction } from
 import { formatCurrency, formatDate } from '@/lib/format';
 import { TrendingUp, TrendingDown, ArrowRight, Sparkles, EyeOff, Eye } from 'lucide-react';
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProfileSheet from '@/components/ProfileSheet';
 import TransactionItem from '@/components/TransactionItem';
@@ -36,7 +36,14 @@ export default function Dashboard() {
   const totalExpense = monthTxns.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
   const recentTxns = transactions.slice(0, 5);
 
-  const [showBalance, setShowBalance] = useState(true);
+  const [showBalance, setShowBalance] = useState(() => {
+    const saved = localStorage.getItem("showBalance");
+    return saved !== null ? JSON.parse(saved) : false; // default: hidden
+  });
+
+  useEffect(() => {
+    localStorage.setItem("showBalance", JSON.stringify(showBalance));
+  }, [showBalance]);
 
   // Greetings
   const getGreeting = () => {
@@ -216,10 +223,10 @@ export default function Dashboard() {
       {insight && (
         <div className="rounded-2xl bg-card border border-accent/20 p-4 flex gap-3 items-start glow-accent animate-card-enter stagger-3">
           <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4 text-accent" />
+            <Sparkles className="w-4 h-4 text-[hsl(var(--accent-text))]" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-accent mb-1">AI Insight</p>
+            <p className="text-xs font-semibold text-[hsl(var(--accent-text))] mb-1">AI Insight</p>
             <p className="text-sm text-card-foreground/80 leading-relaxed">{insight}</p>
           </div>
         </div>

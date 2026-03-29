@@ -62,14 +62,14 @@ export default function Analytics() {
       <div className="flex flex-col gap-2 sm:gap-3">
         <div className="bg-card border border-primary rounded-lg p-3 text-center animate-card-enter stagger-1">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Income</p>
-          <p className="text-sm sm:text-base font-bold text-primary animate-number">
+          <p className="text-sm sm:text-base font-bold text-[hsl(var(--accent-text))] animate-number">
             {formatCurrency(totalIncome)}
           </p>
         </div>
 
-        <div className="bg-card border border-destructive rounded-lg p-3 text-center animate-card-enter stagger-2">
+        <div className="bg-card border border-red-400 rounded-lg p-3 text-center animate-card-enter stagger-2">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Expense</p>
-          <p className="text-sm sm:text-base font-bold text-destructive animate-number">
+          <p className="text-sm sm:text-base font-bold text-red-400 animate-number">
             {formatCurrency(totalExpense)}
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function Analytics() {
           <p className="text-[10px] sm:text-xs text-muted-foreground">Net</p>
           <p
             className={`text-sm sm:text-base font-bold animate-number ${
-              totalIncome - totalExpense >= 0 ? "text-success" : "text-destructive"
+              totalIncome - totalExpense >= 0 ? "text-[hsl(var(--accent-text))]" : "text-red-400"
             }`}
           >
             {formatCurrency(totalIncome - totalExpense)}
@@ -114,7 +114,7 @@ export default function Analytics() {
             {expenseByCategory.map(e => (
               <div key={e.name} className="flex items-center gap-2 min-w-0">
                 <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
-                <span className="text-xs text-muted-foreground truncate">{e.icon} {e.name}</span>
+                <span className="text-xs text-[hsl(var(--accent-text))] truncate">{e.icon} {e.name}</span>
                 <span className="text-xs font-medium text-card-foreground ml-auto shrink-0">{formatCurrency(e.value)}</span>
               </div>
             ))}
@@ -153,7 +153,7 @@ export default function Analytics() {
                 borderRadius: 12,
                 fontSize: 12
               }}
-              labelStyle={{ color: 'hsl(215,15%,55%)' }}
+              labelStyle={{ color: 'hsl(210 90% 85%)' }}
             />
             <Area type="monotone" dataKey="expense" stroke="hsl(0,84%,60%)" fill="url(#aExpGrad)" strokeWidth={2} />
           </AreaChart>

@@ -61,7 +61,7 @@ export default function TransactionItem({ txn, category, wallet, onEdit, onDelet
           </button>
         </div>
       ) : (
-        <p className={`text-sm font-semibold shrink-0 ${txn.type === 'income' ? 'text-success' : txn.type === 'transfer' ? 'text-primary' : 'text-destructive'}`}>
+        <p className={`text-sm font-semibold shrink-0 ${txn.type === 'income' ? 'text-[hsl(var(--accent-text))]' : txn.type === 'transfer' ? 'text-primary' : 'text-red-400'}`}>
           {txn.type === 'income' ? '+' : txn.type === 'transfer' ? '' : '-'}{formatCurrency(Number(txn.amount))}
         </p>
       )}
