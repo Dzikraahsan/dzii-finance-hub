@@ -45,7 +45,7 @@ export default function Analytics() {
 
   // Format Indonesia Rupiah
   const formatRupiah = (num) => {
-    return new Intl.NumberFormat("id-ID").format(num);
+    return "Rp" + new Intl.NumberFormat("id-ID").format(num);
   };
 
   return (
@@ -63,14 +63,14 @@ export default function Analytics() {
         <div className="bg-card border border-primary rounded-lg p-3 text-center animate-card-enter stagger-1">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Income</p>
           <p className="text-sm sm:text-base font-bold text-[hsl(var(--accent-text))] animate-number">
-            {formatCurrency(totalIncome)}
+            {formatRupiah(totalIncome)}
           </p>
         </div>
 
         <div className="bg-card border border-red-400 rounded-lg p-3 text-center animate-card-enter stagger-2">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Expense</p>
           <p className="text-sm sm:text-base font-bold text-red-400 animate-number">
-            {formatCurrency(totalExpense)}
+            {formatRupiah(totalExpense)}
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export default function Analytics() {
               totalIncome - totalExpense >= 0 ? "text-[hsl(var(--accent-text))]" : "text-red-400"
             }`}
           >
-            {formatCurrency(totalIncome - totalExpense)}
+            {formatRupiah(totalIncome - totalExpense)}
           </p>
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function Analytics() {
             <YAxis hide />
             <Tooltip
               formatter={(value, name) => [
-                `Rp ${formatRupiah(value)}`,
+                `${formatRupiah(value)}`,
                 name === "income" ? "Income" : "Expense"
               ]}
               labelFormatter={(label) => {

@@ -38,6 +38,11 @@ export default function BudgetPage() {
     setDeletingId(null);
   };
 
+  // Format Rupiah Indonesia
+  const formatRupiah = (num) => {
+    return "Rp" + new Intl.NumberFormat("id-ID").format(num);
+  };
+
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -63,7 +68,7 @@ export default function BudgetPage() {
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: (cat?.color || '#666') + '20' }}>{cat?.icon}</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-card-foreground truncate">{cat?.name}</p>
-                    <p className="text-xs text-muted-foreground">{formatCurrency(budget.used)} of {formatCurrency(Number(budget.amount))}</p>
+                    <p className="text-xs text-muted-foreground">{formatRupiah(budget.used)} of {formatRupiah(Number(budget.amount))}</p>
                   </div>
                   <span className={`text-sm font-bold shrink-0 ${status === 'over' ? 'text-destructive' : status === 'warn' ? 'text-warning' : 'text-success'}`}>{pct}%</span>
                   <div className="flex gap-1 shrink-0">
@@ -81,7 +86,7 @@ export default function BudgetPage() {
                   <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  {Number(budget.amount) - budget.used > 0 ? `${formatCurrency(Number(budget.amount) - budget.used)} remaining` : `${formatCurrency(budget.used - Number(budget.amount))} over budget`}
+                  {Number(budget.amount) - budget.used > 0 ? `${formatRupiah(Number(budget.amount) - budget.used)} remaining` : `${formatCurrency(budget.used - Number(budget.amount))} over budget`}
                 </p>
               </div>
             );

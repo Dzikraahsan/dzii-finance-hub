@@ -106,7 +106,7 @@ export default function Dashboard() {
 
   // Format Indonesia Rupiah
   const formatRupiah = (num) => {
-    return new Intl.NumberFormat("id-ID").format(num);
+    return "Rp" + new Intl.NumberFormat("id-ID").format(num);
   };
 
   return (
@@ -140,7 +140,7 @@ export default function Dashboard() {
             key={showBalance ? "show" : "hide"}
             className="inline-block animate-[fadeScale_0.25s_ease]"
           >
-            {showBalance ? formatCurrency(totalBalance) : "****"}
+            {showBalance ? formatRupiah(totalBalance) : "****"}
           </span>
         </p>
 
@@ -156,7 +156,7 @@ export default function Dashboard() {
                   key={showBalance ? "inc-show" : "inc-hide"}
                   className="inline-block animate-[fadeScale_0.25s_ease]"
                 >
-                  {showBalance ? formatCurrency(totalIncome) : "****"}
+                  {showBalance ? formatRupiah(totalIncome) : "****"}
                 </span>
               </p>
             </div>
@@ -173,7 +173,7 @@ export default function Dashboard() {
                   key={showBalance ? "exp-show" : "exp-hide"}
                   className="inline-block animate-[fadeScale_0.25s_ease]"
                 >
-                  {showBalance ? formatCurrency(totalExpense) : "****"}
+                  {showBalance ? formatRupiah(totalExpense) : "****"}
                 </span>
               </p>
             </div>
@@ -199,7 +199,7 @@ export default function Dashboard() {
             <YAxis hide />
             <Tooltip
               formatter={(value, name) => [
-                `Rp ${formatRupiah(value)}`,
+                `${formatRupiah(value)}`,
                 name === "income" ? "Income" : "Expense"
               ]}
               labelFormatter={(label) => {

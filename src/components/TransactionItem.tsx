@@ -36,6 +36,11 @@ interface Props {
 export default function TransactionItem({ txn, category, wallet, onEdit, onDelete }: Props) {
   const [showActions, setShowActions] = useState(false);
 
+  // Format Rupiah Indonesia
+  const formatRupiah = (num) => {
+    return "Rp" + new Intl.NumberFormat("id-ID").format(num);
+  };
+
   return (
     <div
       className="flex items-center gap-3 bg-card rounded-xl p-3 border border-border card-interactive"
@@ -62,7 +67,7 @@ export default function TransactionItem({ txn, category, wallet, onEdit, onDelet
         </div>
       ) : (
         <p className={`text-sm font-semibold shrink-0 ${txn.type === 'income' ? 'text-[hsl(var(--accent-text))]' : txn.type === 'transfer' ? 'text-primary' : 'text-red-400'}`}>
-          {txn.type === 'income' ? '+' : txn.type === 'transfer' ? '' : '-'}{formatCurrency(Number(txn.amount))}
+          {txn.type === 'income' ? '+' : txn.type === 'transfer' ? '' : '-'}{formatRupiah(Number(txn.amount))}
         </p>
       )}
     </div>

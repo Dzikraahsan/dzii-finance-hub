@@ -48,6 +48,11 @@ export default function AddBudgetSheet({ open, onOpenChange, editBudget }: Props
     else setAmount(prev => prev + key);
   };
 
+  // Format Rupiah Indonesia
+  const formatRupiah = (num) => {
+    return "Rp" + new Intl.NumberFormat("id-ID").format(num);
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-2xl border-t border-border p-0 bg-background max-h-[85vh]">
@@ -59,7 +64,7 @@ export default function AddBudgetSheet({ open, onOpenChange, editBudget }: Props
           {/* Amount */}
           <div className="text-center px-5 mb-4">
             <p className="text-muted-foreground text-xs mb-1">Monthly Budget</p>
-            <p className="balance-number text-foreground">{amount ? `Rp ${Number(amount).toLocaleString('id-ID')}` : 'Rp 0'}</p>
+            <p className="balance-number text-foreground">{amount ? `${formatRupiah(amount)}` : 'Rp0'}</p>
           </div>
 
           {/* Category */}

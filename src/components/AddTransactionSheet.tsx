@@ -68,6 +68,11 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
     }
   };
 
+  // Format Rupiah Indonesia
+  const formatRupiah = (num) => {
+    return "Rp" + new Intl.NumberFormat("id-ID").format(num);
+  };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[92vh] rounded-t-2xl border-t border-border p-0 bg-background">
@@ -89,7 +94,7 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
           {/* Amount */}
           <div className="text-center px-5 mb-4">
             <p className="text-muted-foreground text-xs mb-1">Amount</p>
-            <p className="balance-number text-foreground">{amount ? formatCurrency(Number(amount)) : 'Rp 0'}</p>
+            <p className="balance-number text-foreground">{amount ? formatRupiah(Number(amount)) : 'Rp0'}</p>
           </div>
 
           {/* Wallet Selector */}
