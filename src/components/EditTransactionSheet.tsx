@@ -127,10 +127,8 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
     }
   };
 
-  if (!transaction) return null;
-
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={open && !!transaction} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[92vh] rounded-t-2xl border-t border-border p-0 bg-background">
         <div className="flex flex-col h-full overflow-y-auto">
           <SheetHeader className="px-5 pt-5 pb-3">
