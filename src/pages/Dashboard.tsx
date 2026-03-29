@@ -212,7 +212,7 @@ export default function Dashboard() {
                 borderRadius: 12,
                 fontSize: 12
               }}
-              labelStyle={{ color: 'hsl(215,15%,55%)' }}
+              labelStyle={{ color: 'hsl(210 90% 85%)' }}
             />
             <Area type="monotone" dataKey="income" stroke="hsl(142,76%,36%)" fill="url(#incGrad)" strokeWidth={2} />
             <Area type="monotone" dataKey="expense" stroke="hsl(0,84%,60%)" fill="url(#expGrad)" strokeWidth={2} />

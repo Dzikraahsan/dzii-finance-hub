@@ -27,7 +27,7 @@
 
     --accent: 210 70% 70%; /* #88BDF2 */
     --accent-foreground: 210 20% 20%;
-    --accent-text: 210 90% 85%;
+    --accent-text: 210 40% 35%;
 
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
@@ -82,7 +82,7 @@
 
     --accent: 210 70% 70%; /* #88BDF2 */
     --accent-foreground: 210 20% 10%;
-    --accent-text: 210 100% 88%;
+    --accent-text: 210 100% 85%;
 
     --destructive: 0 55% 45%;
     --destructive-foreground: 0 0% 100%;
