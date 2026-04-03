@@ -1,6 +1,6 @@
 import { useTransactions, useCategories, useWallets, useDeleteTransaction } from '@/hooks/useFinanceData';
-import { formatDate } from '@/lib/format';
-import { Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { formatDate, formatCurrency } from '@/lib/format';
+import { Search, SlidersHorizontal, TrendingUp, TrendingDown } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import TransactionItem from '@/components/TransactionItem';
 import TransactionFilterSheet, { TransactionFilters, defaultFilters, hasActiveFilters } from '@/components/TransactionFilterSheet';
@@ -58,12 +58,24 @@ export default function Transactions() {
       filtered = filtered.filter(t => new Date(t.date) >= cutoff);
     }
 
-    const map: Record<string, typeof filtered> = {};
+    const map: Record<string, { income: number; expense: number; transactions: typeof filtered }> = {};
     filtered.forEach(t => {
-      if (!map[t.date]) map[t.date] = [];
-      map[t.date].push(t);
+      const dateKey = t.date.slice(0, 10);
+      if (!map[dateKey]) map[dateKey] = { income: 0, expense: 0, transactions: [] };
+      if (t.type === 'income') map[dateKey].income += Number(t.amount);
+      else if (t.type === 'expense') map[dateKey].expense += Number(t.amount);
+      map[dateKey].transactions.push(t);
     });
-    return Object.entries(map).sort(([a], [b]) => b.localeCompare(a));
+
+    return Object.entries(map)
+      .map(([date, data]) => ({
+        date,
+        income: data.income,
+        expense: data.expense,
+        net: data.income - data.expense,
+        transactions: data.transactions,
+      }))
+      .sort((a, b) => b.date.localeCompare(a.date));
   }, [transactions, categories, search, filters]);
 
   const handleDeleteConfirm = async () => {
@@ -101,11 +113,27 @@ export default function Transactions() {
         <p className="text-sm text-muted-foreground text-center py-12">No transactions found</p>
       ) : (
         <div className="space-y-5">
-          {grouped.map(([date, txns]) => (
-            <div key={date}>
-              <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{formatDate(date)}</p>
+          {grouped.map((day) => (
+            <div key={day.date}>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{formatDate(day.date)}</p>
+                <div className="flex items-center gap-3">
+                  {day.income > 0 && (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-emerald-400">
+                      <TrendingUp className="w-3 h-3" />
+                      {formatCurrency(day.income)}
+                    </span>
+                  )}
+                  {day.expense > 0 && (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-red-400">
+                      <TrendingDown className="w-3 h-3" />
+                      {formatCurrency(day.expense)}
+                    </span>
+                  )}
+                </div>
+              </div>
               <div className="space-y-2">
-                {txns.map((txn, i) => {
+                {day.transactions.map((txn, i) => {
                   const cat = categories.find(c => c.id === txn.category_id);
                   const wallet = wallets.find(w => w.id === txn.wallet_id);
                   return (

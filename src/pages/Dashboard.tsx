@@ -36,6 +36,12 @@ export default function Dashboard() {
   const totalExpense = monthTxns.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
   const recentTxns = transactions.slice(0, 5);
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayTxns = transactions.filter(t => t.date === todayStr);
+  const todayIncome = todayTxns.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+  const todayExpense = todayTxns.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+  const todayNet = todayIncome - todayExpense;
+
   const [showBalance, setShowBalance] = useState(() => {
     const saved = localStorage.getItem("showBalance");
     return saved !== null ? JSON.parse(saved) : false; // default: hidden
@@ -181,6 +187,24 @@ export default function Dashboard() {
         </div>
       </div>
 
+      <div className="rounded-2xl bg-card border border-border p-4 animate-card-enter stagger-1">
+        <p className="text-sm font-semibold text-card-foreground mb-2">Today</p>
+        <div className="flex gap-4">
+          <div className="flex-1 text-center">
+            <p className="text-[10px] text-muted-foreground">Income</p>
+            <p className="text-xs font-semibold text-emerald-400">{formatRupiah(todayIncome)}</p>
+          </div>
+          <div className="flex-1 text-center">
+            <p className="text-[10px] text-muted-foreground">Expense</p>
+            <p className="text-xs font-semibold text-red-400">{formatRupiah(todayExpense)}</p>
+          </div>
+          <div className="flex-1 text-center">
+            <p className="text-[10px] text-muted-foreground">Net</p>
+            <p className={`text-xs font-semibold ${todayNet >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatRupiah(todayNet)}</p>
+          </div>
+        </div>
+      </div>
+
       <div className="rounded-2xl bg-card border border-border p-4 animate-card-enter stagger-2">
         <p className="text-sm font-semibold text-card-foreground mb-3">Last 7 Days</p>
         <ResponsiveContainer width="100%" height={120}>
@@ -220,18 +244,6 @@ export default function Dashboard() {
         </ResponsiveContainer>
       </div>
 
-      {insight && (
-        <div className="rounded-2xl bg-card border border-accent/20 p-4 flex gap-3 items-start glow-accent animate-card-enter stagger-3">
-          <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4 text-[hsl(var(--accent-text))]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-[hsl(var(--accent-text))] mb-1">AI Insight</p>
-            <p className="text-sm text-card-foreground/80 leading-relaxed">{insight}</p>
-          </div>
-        </div>
-      )}
-
       <div>
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-foreground">Recent Transactions</p>
@@ -254,6 +266,18 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {insight && (
+        <div className="rounded-2xl bg-card border border-accent/20 p-4 flex gap-3 items-start glow-accent animate-card-enter stagger-3">
+          <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4 text-[hsl(var(--accent-text))]" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold text-[hsl(var(--accent-text))] mb-1">AI Insight</p>
+            <p className="text-sm text-card-foreground/80 leading-relaxed">{insight}</p>
+          </div>
+        </div>
+      )}
 
       <ProfileSheet open={showProfile} onOpenChange={setShowProfile} />
       <EditTransactionSheet open={!!editTxn} onOpenChange={v => { if (!v) setEditTxn(null); }} transaction={editTxn} />
