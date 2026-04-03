@@ -204,7 +204,8 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
             </div>
           )}
 
-          <div className="px-5 mb-4">
+          <div className="px-5 mb-6">
+            <p className="text-xs text-muted-foreground mb-2">Note</p>
             <input value={note} onChange={e => setNote(e.target.value)} placeholder="Add a note..."
               className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
