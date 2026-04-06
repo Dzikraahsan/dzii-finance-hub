@@ -93,7 +93,7 @@ export default function TransactionCalendarView({ transactions, currentMonth, on
               onClick={() => onDateSelect(dateStr)}
               className={`aspect-square rounded-lg flex flex-col items-center justify-center gap-0.5 text-xs transition-all duration-150 btn-press relative
                 ${isSelected ? 'bg-primary text-primary-foreground ring-2 ring-primary/30' : ''}
-                ${isToday && !isSelected ? 'bg-accent/30 text-accent-foreground font-semibold' : ''}
+                ${isToday && !isSelected ? 'bg-accent/30 text-muted-foreground font-semibold' : ''}
                 ${!isToday && !isSelected ? 'hover:bg-muted/50 text-foreground' : ''}
               `}
             >
@@ -118,22 +118,38 @@ export default function TransactionCalendarView({ transactions, currentMonth, on
         });
         if (mIncome === 0 && mExpense === 0) return null;
         return (
-          <div className="mt-4 p-3 rounded-xl bg-card border border-border flex items-center justify-between">
-            <div className="text-xs">
-              <span className="text-muted-foreground">Income </span>
-              <span className="text-[hsl(var(--success))] font-medium">{formatCurrency(mIncome)}</span>
+            <div className="mt-4 p-3 rounded-xl bg-card border border-border flex flex-col">
+                <div className="flex items-center justify-between text-[10px] sm:text-xs lg:text-xs pb-2">
+                    <span className="text-muted-foreground">Income</span>
+                    <span className="text-[hsl(var(--success))] font-medium">
+                    {formatCurrency(mIncome)}
+                    </span>
+                </div>
+
+                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-2" />
+
+                <div className="flex items-center justify-between text-[10px] sm:text-xs lg:text-xs pb-2">
+                    <span className="text-muted-foreground">Expense</span>
+                    <span className="text-destructive font-medium">
+                    {formatCurrency(mExpense)}
+                    </span>
+                </div>
+
+                <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-2" />
+
+                <div className="flex items-center justify-between text-[10px] sm:text-xs lg:text-xs">
+                    <span className="text-muted-foreground">Net</span>
+                    <span
+                    className={`font-medium ${
+                        mIncome - mExpense >= 0
+                        ? "text-[hsl(var(--success))]"
+                        : "text-destructive"
+                    }`}
+                    >
+                    {formatCurrency(mIncome - mExpense)}
+                    </span>
+                </div>
             </div>
-            <div className="text-xs">
-              <span className="text-muted-foreground">Expense </span>
-              <span className="text-destructive font-medium">{formatCurrency(mExpense)}</span>
-            </div>
-            <div className="text-xs">
-              <span className="text-muted-foreground">Net </span>
-              <span className={`font-medium ${mIncome - mExpense >= 0 ? 'text-[hsl(var(--success))]' : 'text-destructive'}`}>
-                {formatCurrency(mIncome - mExpense)}
-              </span>
-            </div>
-          </div>
         );
       })()}
     </div>

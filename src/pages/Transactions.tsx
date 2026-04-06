@@ -1,7 +1,7 @@
 import { useTransactions, useCategories, useWallets, useDeleteTransaction } from '@/hooks/useFinanceData';
 import { formatDate, formatCurrency } from '@/lib/format';
 import { Search, SlidersHorizontal, TrendingUp, TrendingDown, Calendar, List, BarChart3 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import TransactionItem from '@/components/TransactionItem';
 import TransactionFilterSheet, { TransactionFilters, defaultFilters, hasActiveFilters } from '@/components/TransactionFilterSheet';
 import EditTransactionSheet from '@/components/EditTransactionSheet';
@@ -15,22 +15,34 @@ import { toast } from 'sonner';
 
 type ViewMode = 'day' | 'week' | 'month';
 
+function getTodayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function normalize(date: string) {
+  return date.slice(0, 10);
+}
+
 export default function Transactions() {
   const { data: transactions = [] } = useTransactions();
   const { data: categories = [] } = useCategories();
   const { data: wallets = [] } = useWallets();
   const deleteTxn = useDeleteTransaction();
+
+  // Centralized state
+  const [viewMode, setViewMode] = useState<ViewMode>('day');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
   const [search, setSearch] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [filters, setFilters] = useState<TransactionFilters>(defaultFilters);
   const [editTxn, setEditTxn] = useState<any>(null);
   const [deletingTxn, setDeletingTxn] = useState<any>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('day');
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
   const active = hasActiveFilters(filters);
 
-  // Base filtered transactions (search + filters, no date range when in calendar/weekly)
+  // Base filtered transactions (search + type/category/wallet filters, NO date range in calendar/week modes)
   const filtered = useMemo(() => {
     let result = transactions;
 
@@ -46,8 +58,8 @@ export default function Transactions() {
     if (filters.categoryId) result = result.filter(t => t.category_id === filters.categoryId);
     if (filters.walletId) result = result.filter(t => t.wallet_id === filters.walletId || t.to_wallet_id === filters.walletId);
 
-    // Date filter only in day view
-    if (viewMode === 'day' && filters.dateRange !== 'all') {
+    // Date range filter only in day view without a selected date
+    if (viewMode === 'day' && !selectedDate && filters.dateRange !== 'all') {
       const now = new Date();
       let cutoff = new Date();
       if (filters.dateRange === 'today') {
@@ -61,20 +73,33 @@ export default function Transactions() {
     }
 
     return result;
-  }, [transactions, categories, search, filters, viewMode]);
+  }, [transactions, categories, search, filters, viewMode, selectedDate]);
 
-  // Daily grouped data (for day view)
+  // Transactions for a specific selected date
+  const selectedDateTransactions = useMemo(() => {
+    if (!selectedDate) return [];
+    return filtered.filter(t => normalize(t.date) === selectedDate);
+  }, [filtered, selectedDate]);
+
+  // Selected date aggregates
+  const selectedDateSummary = useMemo(() => {
+    let income = 0, expense = 0;
+    selectedDateTransactions.forEach(t => {
+      if (t.type === 'income') income += Number(t.amount);
+      else if (t.type === 'expense') expense += Number(t.amount);
+    });
+    return { income, expense, net: income - expense };
+  }, [selectedDateTransactions]);
+
+  // Daily grouped data (for day view without selected date)
   const grouped = useMemo(() => {
-    let source = filtered;
-
-    // If a date is selected from calendar/weekly, filter to that date
-    if (selectedDate && viewMode === 'day') {
-      source = source.filter(t => t.date.slice(0, 10) === selectedDate);
-    }
+    const source = selectedDate
+      ? filtered.filter(t => normalize(t.date) === selectedDate)
+      : filtered;
 
     const map: Record<string, { income: number; expense: number; transactions: typeof source }> = {};
     source.forEach(t => {
-      const dateKey = t.date.slice(0, 10);
+      const dateKey = normalize(t.date);
       if (!map[dateKey]) map[dateKey] = { income: 0, expense: 0, transactions: [] };
       if (t.type === 'income') map[dateKey].income += Number(t.amount);
       else if (t.type === 'expense') map[dateKey].expense += Number(t.amount);
@@ -90,7 +115,7 @@ export default function Transactions() {
         transactions: data.transactions,
       }))
       .sort((a, b) => b.date.localeCompare(a.date));
-  }, [filtered, selectedDate, viewMode]);
+  }, [filtered, selectedDate]);
 
   const handleDeleteConfirm = async () => {
     if (!deletingTxn) return;
@@ -101,20 +126,71 @@ export default function Transactions() {
     setDeletingTxn(null);
   };
 
-  const handleDateSelect = (date: string) => {
-    setSelectedDate(date);
-    setViewMode('day');
-  };
+  // Calendar date click: stay in month view, show transactions below
+  const handleCalendarDateSelect = useCallback((date: string) => {
+    setSelectedDate(normalize(date));
+  }, []);
 
-  const handleBackToView = (mode: ViewMode) => {
-    setSelectedDate(null);
+  // Weekly date click: switch to day view for that date
+  const handleWeekDateSelect = useCallback((date: string) => {
+    setSelectedDate(normalize(date));
+    setViewMode('day');
+  }, []);
+
+  // View mode switch
+  const handleViewSwitch = useCallback((mode: ViewMode) => {
     setViewMode(mode);
-  };
+    setSelectedDate(null);
+  }, []);
 
   const viewIcons: Record<ViewMode, any> = {
     day: List,
     week: BarChart3,
     month: Calendar,
+  };
+
+  // Render transaction list (reused in month+selectedDate and day view)
+  const renderTransactionList = (txns: typeof grouped) => {
+    if (txns.length === 0) {
+      return <p className="text-sm text-muted-foreground text-center py-12">No transactions found</p>;
+    }
+    return (
+      <div className="space-y-5">
+        {txns.map((day) => (
+          <div key={day.date}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{formatDate(day.date)}</p>
+              <div className="flex items-center gap-3">
+                {day.income > 0 && (
+                  <span className="flex items-center gap-1 text-[10px] font-medium text-[hsl(var(--success))]">
+                    <TrendingUp className="w-3 h-3" />
+                    {formatCurrency(day.income)}
+                  </span>
+                )}
+                {day.expense > 0 && (
+                  <span className="flex items-center gap-1 text-[10px] font-medium text-destructive">
+                    <TrendingDown className="w-3 h-3" />
+                    {formatCurrency(day.expense)}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              {day.transactions.map((txn, i) => {
+                const cat = categories.find(c => c.id === txn.category_id);
+                const wallet = wallets.find(w => w.id === txn.wallet_id);
+                return (
+                  <div key={txn.id} className={`animate-list-item stagger-${Math.min(i + 1, 10)}`}>
+                    <TransactionItem txn={txn as any} category={cat as any} wallet={wallet as any}
+                      onEdit={setEditTxn} onDelete={setDeletingTxn} />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -127,14 +203,13 @@ export default function Transactions() {
       <div className="flex gap-1 mb-4 p-1 bg-card border border-border rounded-xl">
         {(['day', 'week', 'month'] as ViewMode[]).map(mode => {
           const Icon = viewIcons[mode];
-          const isActive = viewMode === mode && !selectedDate;
-          const isActiveFromSelection = viewMode === 'day' && selectedDate && mode === 'day';
+          const isActive = viewMode === mode;
           return (
             <button
               key={mode}
-              onClick={() => mode === viewMode && !selectedDate ? null : handleBackToView(mode === 'day' ? 'day' : mode)}
+              onClick={() => handleViewSwitch(mode)}
               className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all duration-200 btn-press
-                ${isActive || isActiveFromSelection ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}
+                ${isActive ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}
               `}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -144,18 +219,8 @@ export default function Transactions() {
         })}
       </div>
 
-      {/* Back button when viewing a specific date from calendar/weekly */}
-      {selectedDate && (
-        <button
-          onClick={() => handleBackToView('month')}
-          className="flex items-center gap-1 text-xs text-primary font-medium mb-3 btn-press"
-        >
-          ← Back to calendar
-        </button>
-      )}
-
       {/* Search + Filter (day view only) */}
-      {(viewMode === 'day') && (
+      {viewMode === 'day' && (
         <div className="flex gap-2 mb-5">
           <div className="flex-1 flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-2.5">
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -177,70 +242,69 @@ export default function Transactions() {
       )}
 
       {/* MONTH VIEW */}
-      {viewMode === 'month' && !selectedDate && (
-        <TransactionCalendarView
-          transactions={filtered}
-          currentMonth={currentMonth}
-          onMonthChange={setCurrentMonth}
-          onDateSelect={handleDateSelect}
-          selectedDate={selectedDate}
-        />
-      )}
-
-      {/* WEEK VIEW */}
-      {viewMode === 'week' && !selectedDate && (
-        <TransactionWeeklyView
-          transactions={filtered}
-          currentMonth={currentMonth}
-          onMonthChange={setCurrentMonth}
-          onDateSelect={handleDateSelect}
-        />
-      )}
-
-      {/* DAY VIEW */}
-      {viewMode === 'day' && (
+      {viewMode === 'month' && (
         <>
-          {grouped.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-12">No transactions found</p>
-          ) : (
-            <div className="space-y-5">
-              {grouped.map((day) => (
-                <div key={day.date}>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{formatDate(day.date)}</p>
-                    <div className="flex items-center gap-3">
-                      {day.income > 0 && (
-                        <span className="flex items-center gap-1 text-[10px] font-medium text-[hsl(var(--success))]">
-                          <TrendingUp className="w-3 h-3" />
-                          {formatCurrency(day.income)}
-                        </span>
-                      )}
-                      {day.expense > 0 && (
-                        <span className="flex items-center gap-1 text-[10px] font-medium text-destructive">
-                          <TrendingDown className="w-3 h-3" />
-                          {formatCurrency(day.expense)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {day.transactions.map((txn, i) => {
-                      const cat = categories.find(c => c.id === txn.category_id);
-                      const wallet = wallets.find(w => w.id === txn.wallet_id);
-                      return (
-                        <div key={txn.id} className={`animate-list-item stagger-${Math.min(i + 1, 10)}`}>
-                          <TransactionItem txn={txn as any} category={cat as any} wallet={wallet as any}
-                            onEdit={setEditTxn} onDelete={setDeletingTxn} />
-                        </div>
-                      );
-                    })}
-                  </div>
+          <TransactionCalendarView
+            transactions={filtered}
+            currentMonth={currentMonth}
+            onMonthChange={setCurrentMonth}
+            onDateSelect={handleCalendarDateSelect}
+            selectedDate={selectedDate}
+          />
+
+          {/* Selected date transactions shown BELOW calendar */}
+          {selectedDate && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-semibold text-foreground">{formatDate(selectedDate)}</p>
+                <div className="flex items-center gap-3">
+                  {selectedDateSummary.income > 0 && (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-[hsl(var(--success))]">
+                      <TrendingUp className="w-3 h-3" />
+                      {formatCurrency(selectedDateSummary.income)}
+                    </span>
+                  )}
+                  {selectedDateSummary.expense > 0 && (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-destructive">
+                      <TrendingDown className="w-3 h-3" />
+                      {formatCurrency(selectedDateSummary.expense)}
+                    </span>
+                  )}
                 </div>
-              ))}
+              </div>
+              {selectedDateTransactions.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">No transactions on this date</p>
+              ) : (
+                <div className="space-y-2">
+                  {selectedDateTransactions.map((txn, i) => {
+                    const cat = categories.find(c => c.id === txn.category_id);
+                    const wallet = wallets.find(w => w.id === txn.wallet_id);
+                    return (
+                      <div key={txn.id} className={`animate-list-item stagger-${Math.min(i + 1, 10)}`}>
+                        <TransactionItem txn={txn as any} category={cat as any} wallet={wallet as any}
+                          onEdit={setEditTxn} onDelete={setDeletingTxn} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           )}
         </>
       )}
+
+      {/* WEEK VIEW */}
+      {viewMode === 'week' && (
+        <TransactionWeeklyView
+          transactions={filtered}
+          currentMonth={currentMonth}
+          onMonthChange={setCurrentMonth}
+          onDateSelect={handleWeekDateSelect}
+        />
+      )}
+
+      {/* DAY VIEW */}
+      {viewMode === 'day' && renderTransactionList(grouped)}
 
       <TransactionFilterSheet open={showFilter} onOpenChange={setShowFilter} filters={filters} onApply={setFilters} />
       <EditTransactionSheet open={!!editTxn} onOpenChange={v => { if (!v) setEditTxn(null); }} transaction={editTxn} />
