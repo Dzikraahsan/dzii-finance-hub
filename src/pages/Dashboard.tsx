@@ -247,19 +247,32 @@ export default function Dashboard() {
       <div>
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-foreground">Recent Transactions</p>
-          <button onClick={() => navigate('/transactions')} className="text-xs text-primary flex items-center gap-1">See all <ArrowRight className="w-3 h-3" /></button>
+          <button
+            onClick={() => navigate('/transactions')}
+            className="text-xs text-primary flex items-center gap-1"
+          >
+            See all <ArrowRight className="w-3 h-3" />
+          </button>
         </div>
+
         {recentTxns.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">No transactions yet. Tap + to add one!</p>
+          <p className="text-sm text-muted-foreground text-center py-8">
+            No transactions yet. Tap + to add one!
+          </p>
         ) : (
-          <div className="space-y-2">
+          <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
             {recentTxns.map((txn, i) => {
               const cat = categories.find(c => c.id === txn.category_id);
               const wallet = wallets.find(w => w.id === txn.wallet_id);
               return (
                 <div key={txn.id} className={`animate-list-item stagger-${Math.min(i + 1, 10)}`}>
-                  <TransactionItem txn={txn as any} category={cat as any} wallet={wallet as any}
-                    onEdit={setEditTxn} onDelete={setDeletingTxn} />
+                  <TransactionItem
+                    txn={txn as any}
+                    category={cat as any}
+                    wallet={wallet as any}
+                    onEdit={setEditTxn}
+                    onDelete={setDeletingTxn}
+                  />
                 </div>
               );
             })}

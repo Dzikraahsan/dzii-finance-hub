@@ -220,26 +220,46 @@ export default function Transactions() {
       </div>
 
       {/* Search + Filter (day view only) */}
-      {viewMode === 'day' && (
-        <div className="flex gap-2 mb-5">
-          <div className="flex-1 flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-2.5">
-            <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search transactions..."
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0" />
-          </div>
-          <button onClick={() => setShowFilter(true)}
-            className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 btn-press ${active ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'}`}>
-            <SlidersHorizontal className={`w-4 h-4 ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
-          </button>
-        </div>
-      )}
+        <div className="max-h-[30vh] overflow-y-auto pr-1">
+        {viewMode === 'day' && (
+          <div className="flex gap-2 mb-5">
+            <div className="flex-1 flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-2.5">
+              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search transactions..."
+                className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none min-w-0"
+              />
+            </div>
 
-      {active && viewMode === 'day' && (
-        <div className="flex items-center gap-2 mb-4 flex-wrap">
-          <span className="text-xs text-primary font-medium">Filters active</span>
-          <button onClick={() => setFilters(defaultFilters)} className="text-xs text-muted-foreground underline">Clear all</button>
-        </div>
-      )}
+            <button
+              onClick={() => setShowFilter(true)}
+              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 btn-press ${
+                active ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'
+              }`}
+            >
+              <SlidersHorizontal
+                className={`w-4 h-4 ${
+                  active ? 'text-primary-foreground' : 'text-muted-foreground'
+                }`}
+              />
+            </button>
+          </div>
+        )}
+
+        {active && viewMode === 'day' && (
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className="text-xs text-primary font-medium">Filters active</span>
+            <button
+              onClick={() => setFilters(defaultFilters)}
+              className="text-xs text-muted-foreground underline"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* MONTH VIEW */}
       {viewMode === 'month' && (
