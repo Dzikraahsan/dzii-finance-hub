@@ -210,8 +210,19 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
           {/* Date */}
           <div className="px-5 mb-4">
             <p className="text-xs text-muted-foreground mb-2">Date</p>
-            <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-              className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+            <div className="relative">
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={e => setSelectedDate(e.target.value)}
+                className="w-full bg-card border border-border rounded-xl px-4 py-3 pr-10 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none"
+              />
+
+              {/* ICON */}
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
+                📅
+              </div>
+            </div>
           </div>
 
           <div className="px-5 mb-6">
