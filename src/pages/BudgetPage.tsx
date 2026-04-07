@@ -70,7 +70,7 @@ export default function BudgetPage() {
                     <p className="text-sm font-medium text-card-foreground truncate">{cat?.name}</p>
                     <p className="text-xs text-muted-foreground">{formatRupiah(budget.used)} of {formatRupiah(Number(budget.amount))}</p>
                   </div>
-                  <span className={`text-sm font-bold shrink-0 ${status === 'over' ? 'text-destructive' : status === 'warn' ? 'text-warning' : 'text-success'}`}>{pct}%</span>
+                  <span className={`text-sm font-bold shrink-0 ${status === 'over' ? 'text-destructive dark:!text-red-400' : status === 'warn' ? 'text-warning dark:!text-yellow-400' : 'text-success dark:!text-[hsl(var(--accent-text))]'}`}>{pct}%</span>
                   <div className="flex gap-1 shrink-0">
                     <button onClick={() => { setEditBudget(budget); setShowAdd(true); }}
                       className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
