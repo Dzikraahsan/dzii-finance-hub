@@ -105,7 +105,7 @@ export default function ProfileSheet({ open, onOpenChange }: Props) {
           {/* Sign Out */}
           <div className="px-5 pb-6 pt-4">
             <button onClick={handleSignOut} disabled={signingOut}
-              className="w-full py-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50">
+              className="w-full py-3.5 rounded-xl bg-destructive/10 dark:bg-red-400/10 border border-destructive/20 dark:border-red-400/50 text-destructive dark:text-red-400 font-semibold text-sm transition-all active:scale-[0.98] disabled:opacity-50">
               {signingOut ? 'Signing out...' : 'Sign Out'}
             </button>
           </div>
