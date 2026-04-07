@@ -43,6 +43,7 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
   const [toWalletId, setToWalletId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [note, setNote] = useState('');
+  const [selectedDate, setSelectedDate] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
       setToWalletId(transaction.to_wallet_id || '');
       setCategoryId(transaction.category_id || '');
       setNote(transaction.note || '');
+      setSelectedDate(transaction.date ? transaction.date.split('T')[0] : new Date().toISOString().split('T')[0]);
     }
   }, [transaction]);
 
@@ -98,6 +100,7 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
         amount: amt,
         type,
         note: note || null,
+        date: selectedDate,
         to_wallet_id: type === 'transfer' ? toWalletId : null,
       }).eq('id', transaction.id);
 
@@ -203,6 +206,13 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
               </div>
             </div>
           )}
+
+          {/* Date */}
+          <div className="px-5 mb-4">
+            <p className="text-xs text-muted-foreground mb-2">Date</p>
+            <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
+              className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+          </div>
 
           <div className="px-5 mb-6">
             <p className="text-xs text-muted-foreground mb-2">Note</p>

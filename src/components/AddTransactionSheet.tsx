@@ -28,6 +28,7 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
   const [toWalletId, setToWalletId] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [note, setNote] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const filteredCategories = categories.filter(c =>
     type === 'transfer' ? false : c.type === type
@@ -55,6 +56,7 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
         amount: amt,
         type,
         note: note || undefined,
+        date: selectedDate,
         to_wallet_id: type === 'transfer' ? toWalletId : undefined,
       });
       toast.success('Transaction saved!');
@@ -62,6 +64,7 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
       setAmount('');
       setNote('');
       setCategoryId('');
+      setSelectedDate(new Date().toISOString().split('T')[0]);
       setToWalletId('');
     } catch {
       toast.error('Failed to save transaction');
@@ -154,6 +157,13 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
               </div>
             </div>
           )}
+
+          {/* Date */}
+          <div className="px-5 mb-4">
+            <p className="text-xs text-muted-foreground mb-2">Date</p>
+            <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
+              className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
+          </div>
 
           {/* Note */}
           <div className="px-5 mb-6">
