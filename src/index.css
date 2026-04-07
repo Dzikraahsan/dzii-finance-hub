@@ -12,6 +12,7 @@
 
     --card: 210 30% 98%;
     --card-foreground: 210 20% 20%;
+    --calendar-icon-filter: invert(0.3);
 
     --popover: 210 30% 98%;
     --popover-foreground: 210 20% 20%;
@@ -67,6 +68,7 @@
 
     --card: 210 20% 18%;
     --card-foreground: 210 20% 92%;
+    --calendar-icon-filter: invert(1);
 
     --popover: 210 20% 18%;
     --popover-foreground: 210 20% 92%;
@@ -168,6 +170,13 @@
   .recharts-sector:focus {
     outline: none !important;
 }
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: var(--calendar-icon-filter);
+    cursor: pointer;
+    transition: filter 0.2s ease;
+}
+
 }
 
 /* Scrollbar styling */

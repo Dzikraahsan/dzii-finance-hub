@@ -33,6 +33,7 @@ export default function Transactions() {
   // Centralized state
   const [viewMode, setViewMode] = useState<ViewMode>('day');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedWeekRange, setSelectedWeekRange] = useState<{ start: string; end: string } | null>(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [search, setSearch] = useState('');
   const [showFilter, setShowFilter] = useState(false);
@@ -58,22 +59,30 @@ export default function Transactions() {
     if (filters.categoryId) result = result.filter(t => t.category_id === filters.categoryId);
     if (filters.walletId) result = result.filter(t => t.wallet_id === filters.walletId || t.to_wallet_id === filters.walletId);
 
-    // Date range filter only in day view without a selected date
-    if (viewMode === 'day' && !selectedDate && filters.dateRange !== 'all') {
-      const now = new Date();
-      let cutoff = new Date();
-      if (filters.dateRange === 'today') {
-        cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      } else if (filters.dateRange === 'week') {
-        cutoff.setDate(now.getDate() - 7);
-      } else if (filters.dateRange === 'month') {
-        cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
+    // Date range filter in day view
+    if (viewMode === 'day') {
+      if (selectedWeekRange) {
+        // Coming from week view: show only that week's transactions
+        result = result.filter(t => {
+          const d = normalize(t.date);
+          return d >= selectedWeekRange.start && d <= selectedWeekRange.end;
+        });
+      } else if (!selectedDate && filters.dateRange !== 'all') {
+        const now = new Date();
+        let cutoff = new Date();
+        if (filters.dateRange === 'today') {
+          cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        } else if (filters.dateRange === 'week') {
+          cutoff.setDate(now.getDate() - 7);
+        } else if (filters.dateRange === 'month') {
+          cutoff = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+        result = result.filter(t => new Date(t.date) >= cutoff);
       }
-      result = result.filter(t => new Date(t.date) >= cutoff);
     }
 
     return result;
-  }, [transactions, categories, search, filters, viewMode, selectedDate]);
+  }, [transactions, categories, search, filters, viewMode, selectedDate, selectedWeekRange]);
 
   // Transactions for a specific selected date
   const selectedDateTransactions = useMemo(() => {
@@ -131,9 +140,16 @@ export default function Transactions() {
     setSelectedDate(normalize(date));
   }, []);
 
-  // Weekly date click: switch to day view for that date
-  const handleWeekDateSelect = useCallback((date: string) => {
-    setSelectedDate(normalize(date));
+  // Weekly date click: switch to day view showing that week's transactions
+  const handleWeekDateSelect = useCallback((startDate: string) => {
+    const mon = new Date(startDate + 'T00:00:00');
+    const sun = new Date(mon);
+    sun.setDate(mon.getDate() + 6);
+    setSelectedWeekRange({
+      start: normalize(startDate),
+      end: sun.toISOString().slice(0, 10),
+    });
+    setSelectedDate(null);
     setViewMode('day');
   }, []);
 
@@ -141,6 +157,7 @@ export default function Transactions() {
   const handleViewSwitch = useCallback((mode: ViewMode) => {
     setViewMode(mode);
     setSelectedDate(null);
+    setSelectedWeekRange(null);
   }, []);
 
   const viewIcons: Record<ViewMode, any> = {
