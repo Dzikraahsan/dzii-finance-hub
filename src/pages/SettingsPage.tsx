@@ -1,5 +1,5 @@
 import { Moon, Sun, Bell, Shield, Download, User, ChevronRight, LogOut } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTransactions, useCategories, useWallets } from '@/hooks/useFinanceData';
 import { formatCurrency } from '@/lib/format';
@@ -10,11 +10,34 @@ export default function SettingsPage() {
   const { data: transactions = [] } = useTransactions();
   const { data: categories = [] } = useCategories();
   const { data: wallets = [] } = useWallets();
-  const [darkMode, setDarkMode] = useState(document.documentElement.classList.contains('dark'));
 
+  // ✅ FIX: ambil dari localStorage (default tetap light)
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return saved === 'dark';
+  });
+
+  // ✅ FIX: apply theme saat load & berubah
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  // ✅ FIX: simpan ke localStorage
   const toggleTheme = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
   };
 
   const exportCSV = () => {
@@ -57,7 +80,7 @@ export default function SettingsPage() {
       {/* Theme Toggle */}
       <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between animate-card-enter stagger-2">
         <div className="flex items-center gap-3">
-          {darkMode ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-warning" />}
+          {darkMode ? <Moon className="w-5 h-5 text-primary dark:!text-[hsl(var(--accent-text))]" /> : <Sun className="w-5 h-5 text-warning" />}
           <div>
             <p className="text-sm font-medium text-card-foreground">Dark Mode</p>
             <p className="text-xs text-muted-foreground">Toggle theme</p>
@@ -70,19 +93,19 @@ export default function SettingsPage() {
 
       {/* Export */}
       <button onClick={exportCSV} className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-3 text-left btn-press animate-card-enter stagger-3">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Download className="w-5 h-5 text-primary" /></div>
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Download className="w-5 h-5 text-primary dark:!text-[hsl(var(--accent-text))]" /></div>
         <div className="flex-1">
           <p className="text-sm font-medium text-card-foreground">Export Data</p>
           <p className="text-xs text-muted-foreground">Download as CSV</p>
         </div>
-        <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        <ChevronRight className="w-4 h-4 text-muted-foreground dark:!text-[hsl(var(--accent-text))]" />
       </button>
 
       {/* Sign Out */}
       <button onClick={handleSignOut} className="w-full bg-card border border-destructive/20 rounded-2xl p-4 flex items-center gap-3 text-left btn-press animate-card-enter stagger-4">
-        <div className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center"><LogOut className="w-5 h-5 text-destructive" /></div>
+        <div className="w-10 h-10 rounded-xl bg-destructive/10 dark:bg-destructive/25 flex items-center justify-center"><LogOut className="w-5 h-5 text-destructive dark:text-red-400" /></div>
         <div className="flex-1">
-          <p className="text-sm font-medium text-destructive">Sign Out</p>
+          <p className="text-sm font-medium text-destructive dark:text-red-400">Sign Out</p>
           <p className="text-xs text-muted-foreground">Log out of your account</p>
         </div>
       </button>

@@ -35,7 +35,7 @@ export default function BottomNav() {
                     key={path}
                     to={path}
                     className={`nav-tab flex flex-col items-center gap-0.5 px-1.5 py-1.5 rounded-lg min-w-[40px] ${
-                      active ? "text-primary nav-tab-active" : "text-muted-foreground"
+                      active ? "text-primary dark:!text-[hsl(var(--accent-text))] nav-tab-active" : "text-muted-foreground"
                     }`}
                   >
                     <Icon className="w-5 h-5 icon-transition" />

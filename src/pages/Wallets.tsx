@@ -32,7 +32,7 @@ export default function Wallets() {
         <h1 className="text-xl font-bold text-foreground">Wallets</h1>
         <button onClick={() => { setEditWallet(null); setShowAdd(true); }}
           className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center active:scale-90 transition-transform">
-          <Plus className="w-4 h-4 text-primary" />
+          <Plus className="w-4 h-4 text-primary dark:!text-[hsl(var(--accent-text))]" />
         </button>
       </div>
       <div className="bg-card border border-border rounded-2xl p-5 text-center animate-card-enter">
@@ -57,11 +57,11 @@ export default function Wallets() {
             <div className="flex gap-1 shrink-0">
               <button onClick={() => { setEditWallet(wallet); setShowAdd(true); }}
                 className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Pencil className="w-3 h-3 text-primary" />
+                <Pencil className="w-3 h-3 text-primary dark:!text-[hsl(var(--accent-text))]" />
               </button>
               <button onClick={() => setDeletingId(wallet.id)}
-                className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center">
-                <Trash2 className="w-3 h-3 text-destructive" />
+                className="w-7 h-7 rounded-lg bg-destructive/10 dark:!bg-red-400/10 flex items-center justify-center">
+                <Trash2 className="w-3 h-3 text-destructive dark:!text-red-400" />
               </button>
             </div>
           </div>

@@ -49,7 +49,7 @@ export default function BudgetPage() {
         <h1 className="text-xl font-bold text-foreground">Budget</h1>
         <button onClick={() => { setEditBudget(null); setShowAdd(true); }}
           className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center active:scale-90 transition-transform">
-          <Plus className="w-4 h-4 text-primary" />
+          <Plus className="w-4 h-4 text-primary dark:!text-[hsl(var(--accent-text))]" />
         </button>
       </div>
       <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
@@ -74,11 +74,11 @@ export default function BudgetPage() {
                   <div className="flex gap-1 shrink-0">
                     <button onClick={() => { setEditBudget(budget); setShowAdd(true); }}
                       className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <Pencil className="w-3 h-3 text-primary" />
+                      <Pencil className="w-3 h-3 text-primary dark:!text-[hsl(var(--accent-text))]" />
                     </button>
                     <button onClick={() => setDeletingId(budget.id)}
-                      className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center">
-                      <Trash2 className="w-3 h-3 text-destructive" />
+                      className="w-7 h-7 rounded-lg bg-destructive/10 dark:!bg-red-400/10 flex items-center justify-center">
+                      <Trash2 className="w-3 h-3 text-destructive dark:!text-red-400" />
                     </button>
                   </div>
                 </div>

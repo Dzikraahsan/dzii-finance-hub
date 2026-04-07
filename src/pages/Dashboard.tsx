@@ -249,9 +249,9 @@ export default function Dashboard() {
           <p className="text-sm font-semibold text-foreground">Recent Transactions</p>
           <button
             onClick={() => navigate('/transactions')}
-            className="text-xs text-primary flex items-center gap-1"
+            className="text-xs text-primary dark:!text-[hsl(var(--accent-text))] flex items-center gap-1"
           >
-            See all <ArrowRight className="w-3 h-3" />
+            See all <ArrowRight className="w-3 h-3 dark:!text-[hsl(var(--accent-text))]" />
           </button>
         </div>
 

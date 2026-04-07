@@ -120,24 +120,24 @@ export default function TransactionWeeklyView({ transactions, currentMonth, onMo
           {weeks.map((w, i) => (
             <button
               key={w.startDate}
-              onClick={() => onDateSelect(w.startDate)} // ✅ TIDAK DIUBAH
+              onClick={() => onDateSelect(w.startDate)} 
               className={`w-full p-4 rounded-xl bg-card border border-border text-left card-interactive animate-list-item stagger-${Math.min(i + 1, 10)}`}
             >
               <p className="text-xs font-semibold text-foreground mb-2">{w.weekLabel}</p>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {w.income > 0 && (
-                    <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--success))]">
+                    <span className="flex items-center gap-1 text-[11px] text-[hsl(var(--success))] dark:text-[hsl(var(--accent-text))]">
                       <TrendingUp className="w-3 h-3" /> {formatCurrency(w.income)}
                     </span>
                   )}
                   {w.expense > 0 && (
-                    <span className="flex items-center gap-1 text-[11px] text-destructive">
-                      <TrendingDown className="w-3 h-3" /> {formatCurrency(w.expense)}
+                    <span className="flex items-center gap-1 text-[11px] text-destructive dark:text-red-400">
+                      <TrendingDown className="w-3 h-3 !text-red-400" /> {formatCurrency(w.expense)}
                     </span>
                   )}
                 </div>
-                <span className={`text-xs font-medium ${w.net >= 0 ? 'text-[hsl(var(--success))]' : 'text-destructive'}`}>
+                <span className={`text-xs font-medium ${w.net >= 0 ? 'text-[hsl(var(--success))]' : 'text-destructive dark:!text-red-400'}`}>
                   Net: {formatCurrency(w.net)}
                 </span>
               </div>

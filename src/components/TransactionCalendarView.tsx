@@ -100,8 +100,8 @@ export default function TransactionCalendarView({ transactions, currentMonth, on
               <span className={`text-[11px] ${isSelected ? 'font-bold' : ''}`}>{day}</span>
               {data && (
                 <div className="flex gap-0.5">
-                  {hasExpense && <span className="w-1.5 h-1.5 rounded-full bg-destructive" />}
-                  {hasIncome && <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success))]" />}
+                  {hasExpense && <span className="w-1.5 h-1.5 rounded-full bg-destructive dark:!bg-red-400" />}
+                  {hasIncome && <span className="w-1.5 h-1.5 rounded-full bg-[hsl(var(--success))] dark:!text-[hsl(var(--accent-text))]" />}
                 </div>
               )}
             </button>
@@ -121,7 +121,7 @@ export default function TransactionCalendarView({ transactions, currentMonth, on
             <div className="mt-4 p-3 rounded-xl bg-card border border-border flex flex-col">
                 <div className="flex items-center justify-between text-[10px] sm:text-xs lg:text-xs pb-2">
                     <span className="text-muted-foreground">Income</span>
-                    <span className="text-[hsl(var(--success))] font-medium">
+                    <span className="text-[hsl(var(--success))] dark:text-[hsl(var(--accent-text))] font-medium">
                     {formatCurrency(mIncome)}
                     </span>
                 </div>
@@ -130,7 +130,7 @@ export default function TransactionCalendarView({ transactions, currentMonth, on
 
                 <div className="flex items-center justify-between text-[10px] sm:text-xs lg:text-xs pb-2">
                     <span className="text-muted-foreground">Expense</span>
-                    <span className="text-destructive font-medium">
+                    <span className="text-destructive dark:text-red-400 font-medium">
                     {formatCurrency(mExpense)}
                     </span>
                 </div>
@@ -143,7 +143,7 @@ export default function TransactionCalendarView({ transactions, currentMonth, on
                     className={`font-medium ${
                         mIncome - mExpense >= 0
                         ? "text-[hsl(var(--success))]"
-                        : "text-destructive"
+                        : "text-destructive dark:!text-red-400"
                     }`}
                     >
                     {formatCurrency(mIncome - mExpense)}
