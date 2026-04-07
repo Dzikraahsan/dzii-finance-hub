@@ -27,14 +27,21 @@ interface Props {
   onDateSelect: (date: string) => void;
 }
 
+// 🔥 FIX: normalize semua date ke local (ANTI TIMEZONE BUG)
+function toLocalDate(dateStr: string): Date {
+  const d = new Date(dateStr);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 function getMonday(d: Date): Date {
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.getFullYear(), d.getMonth(), diff);
+  const local = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const day = local.getDay();
+  const diff = local.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(local.getFullYear(), local.getMonth(), diff);
 }
 
 function formatShortDate(dateStr: string) {
-  const d = new Date(dateStr + 'T00:00:00');
+  const d = new Date(dateStr);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
@@ -44,32 +51,46 @@ export default function TransactionWeeklyView({ transactions, currentMonth, onMo
   const monthLabel = currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   const weeks = useMemo(() => {
-    const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
-    const monthTxns = transactions.filter(t => t.date.startsWith(prefix));
+    // ✅ FILTER BULAN (PAKAI LOCAL DATE)
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0);
+
+    // ambil semua transaksi yang masuk range minggu yang nyentuh bulan ini
+    const monthTxns = transactions.filter(t => {
+      const d = toLocalDate(t.date);
+      return d >= new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate() - 7)
+        && d <= new Date(monthEnd.getFullYear(), monthEnd.getMonth(), monthEnd.getDate() + 7);
+    });
 
     const weekMap: Record<string, WeekData> = {};
 
     monthTxns.forEach(t => {
-      const d = new Date(t.date + 'T00:00:00');
+      const d = toLocalDate(t.date); // 🔥 FIX UTAMA
+
       const mon = getMonday(d);
       const sun = new Date(mon);
       sun.setDate(mon.getDate() + 6);
-      const key = mon.toISOString().slice(0, 10);
 
-      if (!weekMap[key]) {
-        weekMap[key] = {
-          weekLabel: `${formatShortDate(key)} – ${formatShortDate(sun.toISOString().slice(0, 10))}`,
-          startDate: key,
-          endDate: sun.toISOString().slice(0, 10),
+      // 🔥 NO ISO — pakai local string
+      const monKey = `${mon.getFullYear()}-${String(mon.getMonth() + 1).padStart(2, '0')}-${String(mon.getDate()).padStart(2, '0')}`;
+      const sunKey = `${sun.getFullYear()}-${String(sun.getMonth() + 1).padStart(2, '0')}-${String(sun.getDate()).padStart(2, '0')}`;
+
+      if (!weekMap[monKey]) {
+        weekMap[monKey] = {
+          weekLabel: `${formatShortDate(monKey)} – ${formatShortDate(sunKey)}`,
+          startDate: monKey,
+          endDate: sunKey,
           income: 0,
           expense: 0,
           net: 0,
           count: 0,
         };
       }
-      if (t.type === 'income') weekMap[key].income += Number(t.amount);
-      else if (t.type === 'expense') weekMap[key].expense += Number(t.amount);
-      weekMap[key].count++;
+
+      if (t.type === 'income') weekMap[monKey].income += Number(t.amount);
+      else if (t.type === 'expense') weekMap[monKey].expense += Number(t.amount);
+
+      weekMap[monKey].count++;
     });
 
     return Object.values(weekMap)
@@ -99,7 +120,7 @@ export default function TransactionWeeklyView({ transactions, currentMonth, onMo
           {weeks.map((w, i) => (
             <button
               key={w.startDate}
-              onClick={() => onDateSelect(w.startDate)}
+              onClick={() => onDateSelect(w.startDate)} // ✅ TIDAK DIUBAH
               className={`w-full p-4 rounded-xl bg-card border border-border text-left card-interactive animate-list-item stagger-${Math.min(i + 1, 10)}`}
             >
               <p className="text-xs font-semibold text-foreground mb-2">{w.weekLabel}</p>
@@ -120,7 +141,9 @@ export default function TransactionWeeklyView({ transactions, currentMonth, onMo
                   Net: {formatCurrency(w.net)}
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">{w.count} transaction{w.count !== 1 ? 's' : ''}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {w.count} transaction{w.count !== 1 ? 's' : ''}
+              </p>
             </button>
           ))}
         </div>

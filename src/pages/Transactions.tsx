@@ -142,12 +142,16 @@ export default function Transactions() {
 
   // Weekly date click: switch to day view showing that week's transactions
   const handleWeekDateSelect = useCallback((startDate: string) => {
-    const mon = new Date(startDate + 'T00:00:00');
+    const mon = new Date(startDate);
     const sun = new Date(mon);
     sun.setDate(mon.getDate() + 6);
+
+    const format = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
     setSelectedWeekRange({
-      start: normalize(startDate),
-      end: sun.toISOString().slice(0, 10),
+      start: format(mon),
+      end: format(sun),
     });
     setSelectedDate(null);
     setViewMode('day');
