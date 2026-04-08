@@ -151,7 +151,7 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
                       categoryId === c.id ? 'bg-primary/15 text-[hsl(var(--accent-text))] border border-primary/30' : 'bg-card text-card-foreground border border-border'
                     }`}>
                     <span className="text-lg">{c.icon}</span>
-                    <span className="truncate w-full text-center">{c.name}</span>
+                    <span className="text-[10px] truncate w-full text-center">{c.name}</span>
                   </button>
                 ))}
               </div>
