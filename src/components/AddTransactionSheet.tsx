@@ -107,7 +107,7 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
               {wallets.map(w => (
                 <button key={w.id} onClick={() => setWalletId(w.id)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                    (walletId || wallets[0]?.id) === w.id ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-card text-card-foreground border border-border'
+                    (walletId || wallets[0]?.id) === w.id ? 'bg-primary/15 text-[hsl(var(--accent-text))] border border-primary/30' : 'bg-card text-card-foreground border border-border'
                   }`}>
                   <span>{w.icon}</span>
                   <span className="flex flex-col items-start">
@@ -127,7 +127,7 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
                 {wallets.filter(w => w.id !== effectiveWalletId).map(w => (
                   <button key={w.id} onClick={() => setToWalletId(w.id)}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                      toWalletId === w.id ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-card text-card-foreground border border-border'
+                      toWalletId === w.id ? 'bg-primary/15 text-[hsl(var(--accent-text))] border border-primary/30' : 'bg-card text-card-foreground border border-border'
                     }`}>
                     <span>{w.icon}</span>
                     <span className="flex flex-col items-start">
@@ -148,7 +148,7 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
                 {filteredCategories.map(c => (
                   <button key={c.id} onClick={() => setCategoryId(c.id)}
                     className={`flex flex-col items-center gap-1 py-3 rounded-xl text-xs font-medium transition-all ${
-                      categoryId === c.id ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-card text-card-foreground border border-border'
+                      categoryId === c.id ? 'bg-primary/15 text-[hsl(var(--accent-text))] border border-primary/30' : 'bg-card text-card-foreground border border-border'
                     }`}>
                     <span className="text-lg">{c.icon}</span>
                     <span className="truncate w-full text-center">{c.name}</span>

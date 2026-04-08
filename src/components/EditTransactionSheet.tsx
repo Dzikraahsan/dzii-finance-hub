@@ -166,7 +166,7 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
               {wallets.map(w => (
                 <button key={w.id} onClick={() => setWalletId(w.id)}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                    walletId === w.id ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-card text-card-foreground border border-border'
+                    walletId === w.id ? 'bg-primary/15 text-[hsl(var(--accent-text))] border border-primary/30' : 'bg-card text-card-foreground border border-border'
                   }`}>
                   <span>{w.icon}</span><span>{w.name}</span>
                 </button>
@@ -181,7 +181,7 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
                 {wallets.filter(w => w.id !== walletId).map(w => (
                   <button key={w.id} onClick={() => setToWalletId(w.id)}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
-                      toWalletId === w.id ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-card text-card-foreground border border-border'
+                      toWalletId === w.id ? 'bg-primary/15 text-[hsl(var(--accent-text))] border border-primary/30' : 'bg-card text-card-foreground border border-border'
                     }`}>
                     <span>{w.icon}</span><span>{w.name}</span>
                   </button>
@@ -197,7 +197,7 @@ export default function EditTransactionSheet({ open, onOpenChange, transaction }
                 {filteredCategories.map(c => (
                   <button key={c.id} onClick={() => setCategoryId(c.id)}
                     className={`flex flex-col items-center gap-1 py-3 rounded-xl text-xs font-medium transition-all ${
-                      categoryId === c.id ? 'bg-primary/15 text-primary border border-primary/30' : 'bg-card text-card-foreground border border-border'
+                      categoryId === c.id ? 'bg-primary/15 text-[hsl(var(--accent-text))] border border-primary/30' : 'bg-card text-card-foreground border border-border'
                     }`}>
                     <span className="text-lg">{c.icon}</span>
                     <span className="truncate w-full text-center">{c.name}</span>
