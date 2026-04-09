@@ -1,21 +1,17 @@
-import { useWallets, useTransactions, useCategories, useDeleteTransaction } from '@/hooks/useFinanceData';
+import { useWallets, useTransactions, useCategories, useDeleteTransaction, useBudgets } from '@/hooks/useFinanceData';
 import { formatCurrency, formatDate } from '@/lib/format';
-import { TrendingUp, TrendingDown, ArrowRight, Sparkles, EyeOff, Eye } from 'lucide-react';
+import { generateInsights, formatRupiah, summarize, getTodayISO } from '@/lib/financeEngine';
+import { TrendingUp, TrendingDown, ArrowRight, EyeOff, Eye, Target } from 'lucide-react';
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProfileSheet from '@/components/ProfileSheet';
 import TransactionItem from '@/components/TransactionItem';
 import EditTransactionSheet from '@/components/EditTransactionSheet';
+import InsightCards from '@/components/InsightCards';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
@@ -23,6 +19,7 @@ export default function Dashboard() {
   const { data: wallets = [] } = useWallets();
   const { data: transactions = [] } = useTransactions();
   const { data: categories = [] } = useCategories();
+  const { data: budgets = [] } = useBudgets();
   const deleteTxn = useDeleteTransaction();
   const navigate = useNavigate();
   const [showProfile, setShowProfile] = useState(false);
@@ -36,45 +33,27 @@ export default function Dashboard() {
   const totalExpense = monthTxns.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
   const recentTxns = transactions.slice(0, 5);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayISO();
   const todayTxns = transactions.filter(t => t.date === todayStr);
-  const todayIncome = todayTxns.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
-  const todayExpense = todayTxns.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
-  const todayNet = todayIncome - todayExpense;
+  const todaySummary = useMemo(() => summarize(todayTxns), [todayTxns]);
 
   const [showBalance, setShowBalance] = useState(() => {
     const saved = localStorage.getItem("showBalance");
-    return saved !== null ? JSON.parse(saved) : false; // default: hidden
+    return saved !== null ? JSON.parse(saved) : false;
   });
 
   useEffect(() => {
     localStorage.setItem("showBalance", JSON.stringify(showBalance));
   }, [showBalance]);
 
-  // Greetings
   const getGreeting = () => {
-  const now = new Date();
-
-  // WIB (GMT+7)
-  const wibHour = new Date(
-    now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
-  ).getHours();
-
-  // 01:00 - 10:59 → morning
-  if (wibHour >= 1 && wibHour <= 10) return "Good morning 👋";
-
-  // 11:00 - 14:59 → afternoon
-  if (wibHour >= 11 && wibHour <= 14) return "Good afternoon ☀️";
-
-  // 15:00 - 18:59 → evening
-  if (wibHour >= 15 && wibHour <= 18) return "Good evening 🌇";
-
-  // 19:00 - 23:59 → night
-  if (wibHour >= 19 && wibHour <= 23) return "Good night 🌙";
-
-  // 00:00 → night
-  return "Good night 🌙";
-};
+    const now = new Date();
+    const wibHour = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" })).getHours();
+    if (wibHour >= 1 && wibHour <= 10) return "Good morning 👋";
+    if (wibHour >= 11 && wibHour <= 14) return "Good afternoon ☀️";
+    if (wibHour >= 15 && wibHour <= 18) return "Good evening 🌇";
+    return "Good night 🌙";
+  };
 
   const chartData = useMemo(() => {
     const days: Record<string, { income: number; expense: number }> = {};
@@ -91,15 +70,23 @@ export default function Dashboard() {
     return Object.entries(days).map(([date, vals]) => ({ date, ...vals }));
   }, [transactions]);
 
-  const insight = useMemo(() => {
-    if (monthTxns.length === 0) return null;
-    const topCatId = monthTxns.filter(t => t.type === 'expense')
-      .reduce((acc, t) => { acc[t.category_id || ''] = (acc[t.category_id || ''] || 0) + Number(t.amount); return acc; }, {} as Record<string, number>);
-    const topEntry = Object.entries(topCatId).sort(([,a], [,b]) => b - a)[0];
-    if (!topEntry) return null;
-    const cat = categories.find(c => c.id === topEntry[0]);
-    return `Your top spending category this month is ${cat?.icon || ''} ${cat?.name || 'Unknown'} at ${formatCurrency(topEntry[1])}`;
-  }, [monthTxns, categories]);
+  // Smart insights from finance engine
+  const insights = useMemo(
+    () => generateInsights(transactions as any, categories as any),
+    [transactions, categories]
+  );
+
+  // Budget alerts
+  const budgetAlerts = useMemo(() => {
+    return budgets.map(budget => {
+      const used = monthTxns
+        .filter(t => t.type === 'expense' && t.category_id === budget.category_id)
+        .reduce((s, t) => s + Number(t.amount), 0);
+      const pct = Math.round((used / Number(budget.amount)) * 100);
+      const cat = categories.find(c => c.id === budget.category_id);
+      return { ...budget, used, pct, cat };
+    }).filter(b => b.pct >= 80);
+  }, [budgets, monthTxns, categories]);
 
   const handleDeleteConfirm = async () => {
     if (!deletingTxn) return;
@@ -110,13 +97,8 @@ export default function Dashboard() {
     setDeletingTxn(null);
   };
 
-  // Format Indonesia Rupiah
-  const formatRupiah = (num) => {
-    return "Rp" + new Intl.NumberFormat("id-ID").format(num);
-  };
-
   return (
-    <div className="px-4 pt-6 space-y-5 animate-fade-in">
+    <div className="px-4 pt-6 space-y-5 animate-fade-in pb-4">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-muted-foreground text-sm">{getGreeting()}</p>
@@ -125,43 +107,28 @@ export default function Dashboard() {
         <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm active:scale-95 transition-transform">D</button>
       </div>
 
+      {/* Balance Card */}
       <div className="relative rounded-2xl gradient-primary p-5 glow-primary overflow-hidden">
-
-        {/* BACKGROUND DECOR */}
-        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
-        <div className="absolute right-10 bottom-0 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
+        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
+        <div className="absolute right-10 bottom-0 w-24 h-24 bg-white/5 rounded-full blur-xl" />
 
         <div className="relative z-10">
-          {/* HEADER */}
           <div className="flex items-center justify-between mb-2">
-            <p className="text-primary-foreground/70 text-xs font-medium">
-              Total Balance
-            </p>
-
-            <button
-              onClick={() => setShowBalance(!showBalance)}
-              className="text-primary-foreground transition-all duration-200 active:scale-90 hover:scale-110"
-            >
+            <p className="text-primary-foreground/70 text-xs font-medium">Total Balance</p>
+            <button onClick={() => setShowBalance(!showBalance)} className="text-primary-foreground transition-all duration-200 active:scale-90 hover:scale-110">
               <span className="transition-all duration-300 ease-in-out inline-block">
                 {showBalance ? <EyeOff size={16} /> : <Eye size={16} />}
               </span>
             </button>
           </div>
 
-          {/* MAIN BALANCE */}
           <p className="text-2xl sm:text-2xl font-bold text-primary-foreground tracking-tight mb-4">
-            <span
-              key={showBalance ? "show" : "hide"}
-              className="inline-block animate-[fadeScale_0.25s_ease]"
-            >
+            <span key={showBalance ? "show" : "hide"} className="inline-block animate-[fadeScale_0.25s_ease]">
               {showBalance ? formatRupiah(totalBalance) : "****"}
             </span>
           </p>
 
-          {/* GRID */}
           <div className="grid grid-cols-2 gap-3">
-
-            {/* INCOME */}
             <div className="flex items-center gap-2 bg-white/5 rounded-xl p-2.5">
               <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-primary-foreground" />
@@ -169,17 +136,13 @@ export default function Dashboard() {
               <div className="flex-1">
                 <p className="text-[10px] text-primary-foreground/60">Income</p>
                 <p className="text-xs font-semibold text-primary-foreground">
-                  <span
-                    key={showBalance ? "inc-show" : "inc-hide"}
-                    className="inline-block animate-[fadeScale_0.25s_ease]"
-                  >
+                  <span key={showBalance ? "inc-show" : "inc-hide"} className="inline-block animate-[fadeScale_0.25s_ease]">
                     {showBalance ? formatRupiah(totalIncome) : "****"}
                   </span>
                 </p>
               </div>
             </div>
 
-            {/* EXPENSE */}
             <div className="flex items-center gap-2 bg-white/5 rounded-xl p-2.5">
               <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
                 <TrendingDown className="w-4 h-4 text-primary-foreground" />
@@ -187,23 +150,16 @@ export default function Dashboard() {
               <div className="flex-1">
                 <p className="text-[10px] text-primary-foreground/60">Expense</p>
                 <p className="text-xs font-semibold text-primary-foreground">
-                  <span
-                    key={showBalance ? "exp-show" : "exp-hide"}
-                    className="inline-block animate-[fadeScale_0.25s_ease]"
-                  >
+                  <span key={showBalance ? "exp-show" : "exp-hide"} className="inline-block animate-[fadeScale_0.25s_ease]">
                     {showBalance ? formatRupiah(totalExpense) : "****"}
                   </span>
                 </p>
               </div>
             </div>
-
           </div>
 
-          {/* EXTRA INFO */}
           <div className="flex justify-between mt-4 text-[10px] text-primary-foreground/60">
-            <span>
-              Cash Flow
-            </span>
+            <span>Cash Flow</span>
             <span className="font-medium text-primary-foreground">
               {showBalance ? formatRupiah(totalIncome - totalExpense) : "****"}
             </span>
@@ -211,25 +167,62 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Today Summary */}
       <div className="rounded-2xl bg-card border border-border p-4 animate-card-enter stagger-1">
         <p className="text-sm font-semibold text-card-foreground mb-2">Today</p>
         <div className="flex gap-4">
           <div className="flex-1 text-center">
             <p className="text-[10px] text-muted-foreground">Income</p>
-            <p className="text-xs font-semibold text-emerald-400">{formatRupiah(todayIncome)}</p>
+            <p className="text-xs font-semibold text-[hsl(var(--accent-text))]">{formatRupiah(todaySummary.income)}</p>
           </div>
           <div className="flex-1 text-center">
             <p className="text-[10px] text-muted-foreground">Expense</p>
-            <p className="text-xs font-semibold text-red-400">{formatRupiah(todayExpense)}</p>
+            <p className="text-xs font-semibold text-destructive dark:!text-red-400">{formatRupiah(todaySummary.expense)}</p>
           </div>
           <div className="flex-1 text-center">
             <p className="text-[10px] text-muted-foreground">Net</p>
-            <p className={`text-xs font-semibold ${todayNet >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatRupiah(todayNet)}</p>
+            <p className={`text-xs font-semibold ${todaySummary.net >= 0 ? 'text-[hsl(var(--accent-text))]' : 'text-destructive dark:!text-red-400'}`}>{formatRupiah(todaySummary.net)}</p>
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl bg-card border border-border p-4 animate-card-enter stagger-2">
+      {/* Budget Alerts */}
+      {budgetAlerts.length > 0 && (
+        <div className="space-y-2 animate-card-enter stagger-2">
+          {budgetAlerts.map(b => (
+            <button
+              key={b.id}
+              onClick={() => navigate('/budget')}
+              className={`w-full rounded-xl border p-3 flex items-center gap-3 text-left transition-all active:scale-[0.98] ${
+                b.pct >= 100
+                  ? 'border-destructive/30 bg-destructive/5'
+                  : 'border-warning/30 bg-warning/5'
+              }`}
+            >
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0" style={{ backgroundColor: (b.cat?.color || '#666') + '20' }}>
+                {b.cat?.icon || '📦'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-card-foreground truncate">
+                  {b.cat?.name}: {b.pct}% used
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {formatRupiah(b.used)} of {formatRupiah(Number(b.amount))}
+                </p>
+              </div>
+              <Target className={`w-4 h-4 shrink-0 ${b.pct >= 100 ? 'text-destructive dark:!text-red-400' : 'text-warning'}`} />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Insights */}
+      <div className="animate-card-enter stagger-2">
+        <InsightCards insights={insights} />
+      </div>
+
+      {/* Chart */}
+      <div className="rounded-2xl bg-card border border-border p-4 animate-card-enter stagger-3">
         <p className="text-sm font-semibold text-card-foreground mb-3">Last 7 Days</p>
         <ResponsiveContainer width="100%" height={120}>
           <AreaChart data={chartData}>
@@ -246,11 +239,11 @@ export default function Dashboard() {
             <XAxis dataKey="date" hide />
             <YAxis hide />
             <Tooltip
-              formatter={(value, name) => [
+              formatter={(value: any, name: string) => [
                 `${formatRupiah(value)}`,
                 name === "income" ? "Income" : "Expense"
               ]}
-              labelFormatter={(label) => {
+              labelFormatter={(label: string) => {
                 const d = new Date(label);
                 return `${d.getDate()}/${d.getMonth() + 1}`;
               }}
@@ -268,21 +261,21 @@ export default function Dashboard() {
         </ResponsiveContainer>
       </div>
 
+      {/* Recent Transactions */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-foreground">Recent Transactions</p>
-          <button
-            onClick={() => navigate('/transactions')}
-            className="text-xs text-primary dark:!text-[hsl(var(--accent-text))] flex items-center gap-1"
-          >
+          <button onClick={() => navigate('/transactions')} className="text-xs text-primary dark:!text-[hsl(var(--accent-text))] flex items-center gap-1">
             See all <ArrowRight className="w-3 h-3 dark:!text-[hsl(var(--accent-text))]" />
           </button>
         </div>
 
         {recentTxns.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">
-            No transactions yet. Tap + to add one!
-          </p>
+          <div className="bg-card border border-border rounded-2xl p-8 text-center animate-card-enter">
+            <p className="text-2xl mb-2">📊</p>
+            <p className="text-sm font-medium text-card-foreground mb-1">No transactions yet</p>
+            <p className="text-xs text-muted-foreground">Tap the + button to add your first transaction!</p>
+          </div>
         ) : (
           <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
             {recentTxns.map((txn, i) => {
@@ -290,31 +283,13 @@ export default function Dashboard() {
               const wallet = wallets.find(w => w.id === txn.wallet_id);
               return (
                 <div key={txn.id} className={`animate-list-item stagger-${Math.min(i + 1, 10)}`}>
-                  <TransactionItem
-                    txn={txn as any}
-                    category={cat as any}
-                    wallet={wallet as any}
-                    onEdit={setEditTxn}
-                    onDelete={setDeletingTxn}
-                  />
+                  <TransactionItem txn={txn as any} category={cat as any} wallet={wallet as any} onEdit={setEditTxn} onDelete={setDeletingTxn} />
                 </div>
               );
             })}
           </div>
         )}
       </div>
-
-      {insight && (
-        <div className="rounded-2xl bg-card border border-accent/20 p-4 flex gap-3 items-start glow-accent animate-card-enter stagger-3">
-          <div className="w-8 h-8 rounded-xl bg-accent/15 flex items-center justify-center shrink-0">
-            <Sparkles className="w-4 h-4 text-[hsl(var(--accent-text))]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold text-[hsl(var(--accent-text))] mb-1">AI Insight</p>
-            <p className="text-sm text-card-foreground/80 leading-relaxed">{insight}</p>
-          </div>
-        </div>
-      )}
 
       <ProfileSheet open={showProfile} onOpenChange={setShowProfile} />
       <EditTransactionSheet open={!!editTxn} onOpenChange={v => { if (!v) setEditTxn(null); }} transaction={editTxn} />

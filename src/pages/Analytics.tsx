@@ -1,7 +1,9 @@
 import { useTransactions, useCategories } from '@/hooks/useFinanceData';
 import { formatCurrency } from '@/lib/format';
-import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
+import { formatRupiah, summarize, generateInsights } from '@/lib/financeEngine';
+import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useMemo, useState } from 'react';
+import InsightCards from '@/components/InsightCards';
 
 export default function Analytics() {
   const { data: transactions = [] } = useTransactions();
@@ -27,9 +29,27 @@ export default function Analytics() {
     }).sort((a, b) => b.value - a.value);
   }, [filtered, categories]);
 
-  const totalIncome = filtered.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
-  const totalExpense = filtered.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+  const { income: totalIncome, expense: totalExpense } = useMemo(() => summarize(filtered as any), [filtered]);
 
+  // Income vs Expense bar chart data
+  const barData = useMemo(() => {
+    const days = period === '7d' ? 7 : period === '30d' ? 30 : 7;
+    const result: Record<string, { income: number; expense: number }> = {};
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      result[d.toISOString().split('T')[0]] = { income: 0, expense: 0 };
+    }
+    filtered.forEach(t => {
+      const key = t.date.slice(0, 10);
+      if (result[key]) {
+        if (t.type === 'income') result[key].income += Number(t.amount);
+        else if (t.type === 'expense') result[key].expense += Number(t.amount);
+      }
+    });
+    return Object.entries(result).map(([date, vals]) => ({ date, ...vals }));
+  }, [filtered, period]);
+
+  // Spending trend area chart
   const chartData = useMemo(() => {
     const days = period === '7d' ? 7 : period === '30d' ? 30 : 7;
     const result: Record<string, number> = {};
@@ -43,14 +63,13 @@ export default function Analytics() {
     return Object.entries(result).map(([date, expense]) => ({ date, expense }));
   }, [filtered, period]);
 
-  // Format Indonesia Rupiah
-  const formatRupiah = (num) => {
-    return "Rp" + new Intl.NumberFormat("id-ID").format(num);
-  };
+  const insights = useMemo(() => generateInsights(transactions as any, categories as any), [transactions, categories]);
 
   return (
-    <div className="px-4 pt-6 space-y-5 animate-fade-in">
+    <div className="px-4 pt-6 space-y-5 animate-fade-in pb-4">
       <h1 className="text-xl font-bold text-foreground">Analytics</h1>
+
+      {/* Period Selector */}
       <div className="flex gap-2">
         {(['7d', '30d', 'all'] as const).map(p => (
           <button key={p} onClick={() => setPeriod(p)}
@@ -59,57 +78,65 @@ export default function Analytics() {
           </button>
         ))}
       </div>
+
+      {/* Summary Cards */}
       <div className="flex flex-col gap-2 sm:gap-3">
         <div className="bg-card border border-primary rounded-lg p-3 text-center animate-card-enter stagger-1">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Income</p>
-          <p className="text-sm sm:text-base font-bold text-[hsl(var(--accent-text))] animate-number">
-            {formatRupiah(totalIncome)}
-          </p>
+          <p className="text-sm sm:text-base font-bold text-[hsl(var(--accent-text))] animate-number">{formatRupiah(totalIncome)}</p>
         </div>
-
-        <div className="bg-card border border-red-400 rounded-lg p-3 text-center animate-card-enter stagger-2">
+        <div className="bg-card border border-destructive/40 rounded-lg p-3 text-center animate-card-enter stagger-2">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Expense</p>
-          <p className="text-sm sm:text-base font-bold text-red-400 animate-number">
-            {formatRupiah(totalExpense)}
-          </p>
+          <p className="text-sm sm:text-base font-bold text-destructive dark:!text-red-400 animate-number">{formatRupiah(totalExpense)}</p>
         </div>
-
-        <div className="bg-card border border-success rounded-lg p-3 text-center animate-card-enter stagger-3">
+        <div className="bg-card border border-[hsl(var(--success))] rounded-lg p-3 text-center animate-card-enter stagger-3">
           <p className="text-[10px] sm:text-xs text-muted-foreground">Net</p>
-          <p
-            className={`text-sm sm:text-base font-bold animate-number ${
-              totalIncome - totalExpense >= 0 ? "text-[hsl(var(--accent-text))]" : "text-red-400"
-            }`}
-          >
+          <p className={`text-sm sm:text-base font-bold animate-number ${totalIncome - totalExpense >= 0 ? 'text-[hsl(var(--accent-text))]' : 'text-destructive dark:!text-red-400'}`}>
             {formatRupiah(totalIncome - totalExpense)}
           </p>
         </div>
       </div>
 
+      {/* Insights */}
+      <div className="animate-card-enter stagger-3">
+        <InsightCards insights={insights} />
+      </div>
+
+      {/* Income vs Expense Bar Chart */}
+      <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-4">
+        <p className="text-sm font-semibold text-card-foreground mb-3">Income vs Expense</p>
+        <ResponsiveContainer width="100%" height={160}>
+          <BarChart data={barData} barGap={2}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(210,20%,25%)" opacity={0.3} />
+            <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={(d: string) => new Date(d).getDate().toString()} stroke="hsl(215,15%,55%)" interval="preserveStartEnd" />
+            <YAxis hide />
+            <Tooltip
+              formatter={(value: any, name: string) => [formatRupiah(value), name === 'income' ? 'Income' : 'Expense']}
+              labelFormatter={(label: string) => { const d = new Date(label); return `${d.getDate()}/${d.getMonth() + 1}`; }}
+              contentStyle={{ backgroundColor: 'hsl(224,14%,12%)', border: 'none', borderRadius: 12, fontSize: 12 }}
+              labelStyle={{ color: 'hsl(210 90% 85%)' }}
+            />
+            <Bar dataKey="income" fill="hsl(142,76%,36%)" radius={[4, 4, 0, 0]} maxBarSize={12} />
+            <Bar dataKey="expense" fill="hsl(0,84%,60%)" radius={[4, 4, 0, 0]} maxBarSize={12} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Expense by Category */}
       {expenseByCategory.length > 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-4">
+        <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-5">
           <p className="text-sm font-semibold text-card-foreground mb-3">Expense by Category</p>
-            <div className="outline-none focus:outline-none active:outline-none">
-              <ResponsiveContainer width="100%" height={180}>
-                <PieChart>
-                  <Pie
-                    data={expenseByCategory}
-                    dataKey="value"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={75}
-                    paddingAngle={3}
-                    strokeWidth={0}
-                    isAnimationActive={false}
-                  >
-                    {expenseByCategory.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+          <div className="outline-none focus:outline-none active:outline-none">
+            <ResponsiveContainer width="100%" height={180}>
+              <PieChart>
+                <Pie data={expenseByCategory} dataKey="value" cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={3} strokeWidth={0} isAnimationActive={false}>
+                  {expenseByCategory.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
           <div className="grid grid-cols-2 gap-2 mt-3">
             {expenseByCategory.map(e => (
               <div key={e.name} className="flex items-center gap-2 min-w-0">
@@ -121,12 +148,15 @@ export default function Analytics() {
           </div>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-2xl p-8 text-center">
-          <p className="text-sm text-muted-foreground">No expense data to display</p>
+        <div className="bg-card border border-border rounded-2xl p-8 text-center animate-card-enter">
+          <p className="text-2xl mb-2">📊</p>
+          <p className="text-sm font-medium text-card-foreground mb-1">No expense data</p>
+          <p className="text-xs text-muted-foreground">Start adding transactions to see your spending breakdown.</p>
         </div>
       )}
 
-      <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-5">
+      {/* Spending Trend */}
+      <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-6">
         <p className="text-sm font-semibold text-card-foreground mb-3">Spending Trend</p>
         <ResponsiveContainer width="100%" height={140}>
           <AreaChart data={chartData}>
@@ -136,23 +166,12 @@ export default function Analytics() {
                 <stop offset="100%" stopColor="hsl(0,84%,60%)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={d => new Date(d).getDate().toString()} stroke="hsl(215,15%,55%)" interval="preserveStartEnd" />
+            <XAxis dataKey="date" tick={{ fontSize: 9 }} tickFormatter={(d: string) => new Date(d).getDate().toString()} stroke="hsl(215,15%,55%)" interval="preserveStartEnd" />
             <YAxis hide />
             <Tooltip
-              formatter={(value, name) => [
-                `${formatRupiah(value)}`,
-                name === "income" ? "Income" : "Expense"
-              ]}
-              labelFormatter={(label) => {
-                const d = new Date(label);
-                return `${d.getDate()}/${d.getMonth() + 1}`;
-              }}
-              contentStyle={{
-                backgroundColor: 'hsl(224,14%,12%)',
-                border: 'none',
-                borderRadius: 12,
-                fontSize: 12
-              }}
+              formatter={(value: any) => [formatRupiah(value), 'Expense']}
+              labelFormatter={(label: string) => { const d = new Date(label); return `${d.getDate()}/${d.getMonth() + 1}`; }}
+              contentStyle={{ backgroundColor: 'hsl(224,14%,12%)', border: 'none', borderRadius: 12, fontSize: 12 }}
               labelStyle={{ color: 'hsl(210 90% 85%)' }}
             />
             <Area type="monotone" dataKey="expense" stroke="hsl(0,84%,60%)" fill="url(#aExpGrad)" strokeWidth={2} />

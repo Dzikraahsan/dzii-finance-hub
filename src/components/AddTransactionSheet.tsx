@@ -1,7 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWallets, useCategories, useAddTransaction } from '@/hooks/useFinanceData';
-import { formatCurrency } from '@/lib/format';
+import { detectCategory, formatRupiah } from '@/lib/financeEngine';
 import { toast } from 'sonner';
 
 interface Props {
@@ -29,13 +29,27 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
   const [categoryId, setCategoryId] = useState('');
   const [note, setNote] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [autoDetected, setAutoDetected] = useState(false);
 
   const filteredCategories = categories.filter(c =>
     type === 'transfer' ? false : c.type === type
   );
 
-  // Auto-select first wallet
   const effectiveWalletId = walletId || wallets[0]?.id || '';
+
+  // Auto-detect category from note
+  useEffect(() => {
+    if (type === 'transfer' || !note || categoryId) return;
+    const detected = detectCategory(note, categories as any);
+    if (detected && detected !== categoryId) {
+      setCategoryId(detected);
+      setAutoDetected(true);
+      const cat = categories.find(c => c.id === detected);
+      if (cat) {
+        toast.info(`Auto-detected: ${cat.icon} ${cat.name}`, { duration: 2000 });
+      }
+    }
+  }, [note, type, categories]);
 
   const handleAmountKey = (key: string) => {
     if (key === 'del') setAmount(prev => prev.slice(0, -1));
@@ -64,16 +78,12 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
       setAmount('');
       setNote('');
       setCategoryId('');
+      setAutoDetected(false);
       setSelectedDate(new Date().toISOString().split('T')[0]);
       setToWalletId('');
     } catch {
       toast.error('Failed to save transaction');
     }
-  };
-
-  // Format Rupiah Indonesia
-  const formatRupiah = (num) => {
-    return "Rp" + new Intl.NumberFormat("id-ID").format(num);
   };
 
   return (
@@ -87,7 +97,7 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
           {/* Type Toggle */}
           <div className="flex gap-2 px-5 mb-4">
             {(['expense', 'income', 'transfer'] as TxnType[]).map(t => (
-              <button key={t} onClick={() => { setType(t); setCategoryId(''); }}
+              <button key={t} onClick={() => { setType(t); setCategoryId(''); setAutoDetected(false); }}
                 className={`flex-1 py-2.5 rounded-xl text-sm font-semibold capitalize transition-all ${type === t ? typeColors[t] : 'bg-secondary text-muted-foreground'}`}>
                 {t}
               </button>
@@ -143,10 +153,17 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
           {/* Category Grid */}
           {type !== 'transfer' && (
             <div className="px-5 mb-4">
-              <p className="text-xs text-muted-foreground mb-2">Category</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-muted-foreground">Category</p>
+                {autoDetected && (
+                  <span className="text-[10px] text-[hsl(var(--accent-text))] bg-accent/15 px-2 py-0.5 rounded-full">
+                    ✨ Auto-detected
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-4 gap-2">
                 {filteredCategories.map(c => (
-                  <button key={c.id} onClick={() => setCategoryId(c.id)}
+                  <button key={c.id} onClick={() => { setCategoryId(c.id); setAutoDetected(false); }}
                     className={`flex flex-col items-center gap-1 py-3 rounded-xl text-xs font-medium transition-all ${
                       categoryId === c.id ? 'bg-primary/15 text-[hsl(var(--accent-text))] border border-primary/30' : 'bg-card text-card-foreground border border-border'
                     }`}>
@@ -161,7 +178,6 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
           {/* Date */}
           <div className="px-5 mb-4">
             <p className="text-xs text-muted-foreground mb-2">Date</p>
-
             <div className="relative">
               <input
                 type="date"
@@ -169,18 +185,14 @@ export default function AddTransactionSheet({ open, onOpenChange }: Props) {
                 onChange={e => setSelectedDate(e.target.value)}
                 className="w-full bg-card border border-border rounded-xl px-4 py-3 pr-10 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 appearance-none"
               />
-
-              {/* ICON */}
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">
-                📅
-              </div>
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground">📅</div>
             </div>
           </div>
 
           {/* Note */}
           <div className="px-5 mb-6">
             <p className="text-xs text-muted-foreground mb-2">Note</p>
-            <input value={note} onChange={e => setNote(e.target.value)} placeholder="Add a note..."
+            <input value={note} onChange={e => setNote(e.target.value)} placeholder="Add a note (auto-detects category)..."
               className="w-full bg-card border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" />
           </div>
 
