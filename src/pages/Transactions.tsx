@@ -183,8 +183,8 @@ export default function Transactions() {
               <p className="text-xs font-semibold text-[hsl(var(--accent-text))] uppercase tracking-wider">{formatDate(day.date)}</p>
               <div className="flex items-center gap-3">
                 {day.income > 0 && (
-                  <span className="flex items-center gap-1 text-[10px] font-medium text-[hsl(var(--success))]">
-                    <TrendingUp className="w-3 h-3" />
+                  <span className="flex items-center gap-1 text-[10px] font-medium text-[hsl(var(--success))] dark:!text-[hsl(var(--accent-text))]">
+                    <TrendingUp className="w-3 h-3 dark:!text-[hsl(var(--accent-text))]" />
                     {formatCurrency(day.income)}
                   </span>
                 )}

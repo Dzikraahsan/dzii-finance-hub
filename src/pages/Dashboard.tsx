@@ -125,64 +125,88 @@ export default function Dashboard() {
         <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm active:scale-95 transition-transform">D</button>
       </div>
 
-      <div className="rounded-2xl gradient-primary p-5 glow-primary">
-        <div className="flex items-center justify-between">
-          <p className="text-primary-foreground/70 text-xs font-medium mb-1">
-            Total Balance
-          </p>
+      <div className="relative rounded-2xl gradient-primary p-5 glow-primary overflow-hidden">
 
-          <button
-            onClick={() => setShowBalance(!showBalance)}
-            className="text-primary-foreground transition-all duration-200 active:scale-90 hover:scale-110"
-          >
-            <span className="transition-all duration-300 ease-in-out inline-block">
-              {showBalance ? <EyeOff size={16} /> : <Eye size={16} />}
-            </span>
-          </button>
-        </div>
+        {/* BACKGROUND DECOR */}
+        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
+        <div className="absolute right-10 bottom-0 w-24 h-24 bg-white/5 rounded-full blur-xl"></div>
 
-        <p className="text-2xl sm:text-3xl font-bold text-primary-foreground tracking-tight transition-all duration-300 ease-in-out">
-          <span
-            key={showBalance ? "show" : "hide"}
-            className="inline-block animate-[fadeScale_0.25s_ease]"
-          >
-            {showBalance ? formatRupiah(totalBalance) : "****"}
-          </span>
-        </p>
+        <div className="relative z-10">
+          {/* HEADER */}
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-primary-foreground/70 text-xs font-medium">
+              Total Balance
+            </p>
 
-        <div className="flex gap-4 mt-4">
-          <div className="flex items-center gap-1.5">
-            <div className="w-7 h-7 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <div>
-              <p className="text-[10px] text-primary-foreground/60">Income</p>
-              <p className="text-xs font-semibold text-primary-foreground">
-                <span
-                  key={showBalance ? "inc-show" : "inc-hide"}
-                  className="inline-block animate-[fadeScale_0.25s_ease]"
-                >
-                  {showBalance ? formatRupiah(totalIncome) : "****"}
-                </span>
-              </p>
-            </div>
+            <button
+              onClick={() => setShowBalance(!showBalance)}
+              className="text-primary-foreground transition-all duration-200 active:scale-90 hover:scale-110"
+            >
+              <span className="transition-all duration-300 ease-in-out inline-block">
+                {showBalance ? <EyeOff size={16} /> : <Eye size={16} />}
+              </span>
+            </button>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <div className="w-7 h-7 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-              <TrendingDown className="w-4 h-4 text-primary-foreground" />
+          {/* MAIN BALANCE */}
+          <p className="text-2xl sm:text-2xl font-bold text-primary-foreground tracking-tight mb-4">
+            <span
+              key={showBalance ? "show" : "hide"}
+              className="inline-block animate-[fadeScale_0.25s_ease]"
+            >
+              {showBalance ? formatRupiah(totalBalance) : "****"}
+            </span>
+          </p>
+
+          {/* GRID */}
+          <div className="grid grid-cols-2 gap-3">
+
+            {/* INCOME */}
+            <div className="flex items-center gap-2 bg-white/5 rounded-xl p-2.5">
+              <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] text-primary-foreground/60">Income</p>
+                <p className="text-xs font-semibold text-primary-foreground">
+                  <span
+                    key={showBalance ? "inc-show" : "inc-hide"}
+                    className="inline-block animate-[fadeScale_0.25s_ease]"
+                  >
+                    {showBalance ? formatRupiah(totalIncome) : "****"}
+                  </span>
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-[10px] text-primary-foreground/60">Expense</p>
-              <p className="text-xs font-semibold text-primary-foreground">
-                <span
-                  key={showBalance ? "exp-show" : "exp-hide"}
-                  className="inline-block animate-[fadeScale_0.25s_ease]"
-                >
-                  {showBalance ? formatRupiah(totalExpense) : "****"}
-                </span>
-              </p>
+
+            {/* EXPENSE */}
+            <div className="flex items-center gap-2 bg-white/5 rounded-xl p-2.5">
+              <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
+                <TrendingDown className="w-4 h-4 text-primary-foreground" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[10px] text-primary-foreground/60">Expense</p>
+                <p className="text-xs font-semibold text-primary-foreground">
+                  <span
+                    key={showBalance ? "exp-show" : "exp-hide"}
+                    className="inline-block animate-[fadeScale_0.25s_ease]"
+                  >
+                    {showBalance ? formatRupiah(totalExpense) : "****"}
+                  </span>
+                </p>
+              </div>
             </div>
+
+          </div>
+
+          {/* EXTRA INFO */}
+          <div className="flex justify-between mt-4 text-[10px] text-primary-foreground/60">
+            <span>
+              Cash Flow
+            </span>
+            <span className="font-medium text-primary-foreground">
+              {showBalance ? formatRupiah(totalIncome - totalExpense) : "****"}
+            </span>
           </div>
         </div>
       </div>
