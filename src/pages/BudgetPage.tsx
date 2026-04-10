@@ -65,7 +65,7 @@ export default function BudgetPage() {
             return (
               <div key={budget.id} className={`bg-card border border-border rounded-2xl p-4 card-interactive animate-list-item stagger-${Math.min(budgetsWithUsage.indexOf(budget) + 1, 10)} ${status === 'over' ? 'glow-destructive' : ''}`}>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0" style={{ backgroundColor: (cat?.color || '#666') + '20' }}>{cat?.icon}</div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 bg-red-400/10">{cat?.icon}</div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-card-foreground truncate">{cat?.name}</p>
                     <p className="text-xs text-muted-foreground">{formatRupiah(budget.used)} of {formatRupiah(Number(budget.amount))}</p>

@@ -195,18 +195,18 @@ export default function Dashboard() {
               onClick={() => navigate('/budget')}
               className={`w-full rounded-xl border p-3 flex items-center gap-3 text-left transition-all active:scale-[0.98] ${
                 b.pct >= 100
-                  ? 'border-destructive/30 bg-destructive/5'
-                  : 'border-warning/30 bg-warning/5'
+                  ? 'border-red-400/30 bg-red-400/5'
+                  : 'border-yellow-400/30 bg-yellow-400/5'
               }`}
             >
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0" style={{ backgroundColor: (b.cat?.color || '#666') + '20' }}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 bg-red-400/10">
                 {b.cat?.icon || '📦'}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-card-foreground truncate">
                   {b.cat?.name}: {b.pct}% used
                 </p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[10px] text-foreground/90">
                   {formatRupiah(b.used)} of {formatRupiah(Number(b.amount))}
                 </p>
               </div>

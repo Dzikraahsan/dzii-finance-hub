@@ -14,7 +14,7 @@ const iconMap: Record<string, typeof Sparkles> = {
 
 const colorMap: Record<string, string> = {
   info: 'text-[hsl(var(--accent-text))] bg-accent/15 border-accent/20',
-  warning: 'text-warning bg-warning/10 border-warning/20',
+  warning: 'text-warning bg-yellow-300/10 border-yellow-300/20',
   success: 'text-[hsl(var(--success))] bg-[hsl(var(--success))]/10 border-[hsl(var(--success))]/20',
   trend: 'text-[hsl(var(--accent-text))] bg-accent/15 border-accent/20',
 };
@@ -31,7 +31,7 @@ export default function InsightCards({ insights }: Props) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+      <p className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
         <Sparkles className="w-3 h-3" />
         Smart Insights
       </p>
@@ -45,7 +45,7 @@ export default function InsightCards({ insights }: Props) {
             <div className={`w-8 h-8 rounded-lg ${iconColorMap[insight.type]} flex items-center justify-center shrink-0`}>
               <span className="text-sm">{insight.icon}</span>
             </div>
-            <p className="text-xs text-card-foreground/80 leading-relaxed flex-1">{insight.message}</p>
+            <p className="text-xs text-foreground/90 leading-relaxed flex-1">{insight.message}</p>
           </div>
         );
       })}
