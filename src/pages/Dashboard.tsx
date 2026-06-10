@@ -1,7 +1,7 @@
 import { useWallets, useTransactions, useCategories, useDeleteTransaction, useBudgets } from '@/hooks/useFinanceData';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { generateInsights, formatRupiah, summarize, getTodayISO } from '@/lib/financeEngine';
-import { TrendingUp, TrendingDown, ArrowRight, EyeOff, Eye, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, ArrowRight, EyeOff, Eye, Target, Wallet, Sparkles } from 'lucide-react';
 import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,7 @@ import ProfileSheet from '@/components/ProfileSheet';
 import TransactionItem from '@/components/TransactionItem';
 import EditTransactionSheet from '@/components/EditTransactionSheet';
 import InsightCards from '@/components/InsightCards';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -99,90 +100,100 @@ export default function Dashboard() {
 
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in pb-4">
+      {/* Top bar */}
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-muted-foreground text-sm">{getGreeting()}</p>
-          <h1 className="text-xl font-bold text-foreground">Dzii Finance</h1>
+        <div className="min-w-0">
+          <p className="text-caption text-muted-foreground">{getGreeting()}</p>
+          <h1 className="text-h3 text-foreground truncate">Dzii Finance</h1>
         </div>
-        <button onClick={() => setShowProfile(true)} className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm active:scale-95 transition-transform">D</button>
+        <button
+          onClick={() => setShowProfile(true)}
+          aria-label="Open profile"
+          className="w-10 h-10 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold text-sm shadow-md btn-press"
+        >
+          {user?.email?.[0]?.toUpperCase?.() ?? 'D'}
+        </button>
       </div>
 
-      {/* Balance Card */}
-      <div className="relative rounded-2xl gradient-primary p-5 glow-primary overflow-hidden">
-        <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/5 rounded-full blur-2xl" />
-        <div className="absolute right-10 bottom-0 w-24 h-24 bg-white/5 rounded-full blur-xl" />
+      {/* Balance hero */}
+      <section
+        aria-label="Total balance"
+        className="relative rounded-2xl gradient-primary p-5 glow-primary overflow-hidden text-primary-foreground"
+      >
+        <div className="absolute -right-12 -top-12 w-44 h-44 bg-white/10 rounded-full blur-3xl" aria-hidden />
+        <div className="absolute right-10 bottom-0 w-24 h-24 bg-white/5 rounded-full blur-2xl" aria-hidden />
 
         <div className="relative z-10">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-primary-foreground/70 text-xs font-medium">Total Balance</p>
-            <button onClick={() => setShowBalance(!showBalance)} className="text-primary-foreground transition-all duration-200 active:scale-90 hover:scale-110">
-              <span className="transition-all duration-300 ease-in-out inline-block">
-                {showBalance ? <EyeOff size={16} /> : <Eye size={16} />}
-              </span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Wallet className="w-3.5 h-3.5 opacity-70" />
+              <p className="text-caption font-medium opacity-80">Total Balance</p>
+            </div>
+            <button
+              onClick={() => setShowBalance(!showBalance)}
+              aria-label={showBalance ? 'Hide balance' : 'Show balance'}
+              className="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/15 flex items-center justify-center btn-press"
+            >
+              {showBalance ? <EyeOff size={14} /> : <Eye size={14} />}
             </button>
           </div>
 
-          <p className="text-2xl sm:text-2xl font-bold text-primary-foreground tracking-tight mb-4">
-            <span key={showBalance ? "show" : "hide"} className="inline-block animate-[fadeScale_0.25s_ease]">
-              {showBalance ? formatRupiah(totalBalance) : "****"}
+          <p className="text-3xl font-bold tracking-tight mb-4 font-display">
+            <span key={showBalance ? 'show' : 'hide'} className="inline-block animate-[fadeScale_0.25s_ease]">
+              {showBalance ? formatRupiah(totalBalance) : '••••••••'}
             </span>
           </p>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center gap-2 bg-white/5 rounded-xl p-2.5">
-              <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-                <TrendingUp className="w-4 h-4 text-primary-foreground" />
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="flex items-center gap-2.5 bg-white/10 rounded-xl p-2.5 backdrop-blur-sm">
+              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4" />
               </div>
-              <div className="flex-1">
-                <p className="text-[10px] text-primary-foreground/60">Income</p>
-                <p className="text-xs font-semibold text-primary-foreground">
-                  <span key={showBalance ? "inc-show" : "inc-hide"} className="inline-block animate-[fadeScale_0.25s_ease]">
-                    {showBalance ? formatRupiah(totalIncome) : "****"}
-                  </span>
+              <div className="min-w-0">
+                <p className="text-[10px] opacity-70">Income</p>
+                <p className="text-xs font-semibold truncate">
+                  {showBalance ? formatRupiah(totalIncome) : '••••'}
                 </p>
               </div>
             </div>
-
-            <div className="flex items-center gap-2 bg-white/5 rounded-xl p-2.5">
-              <div className="w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center">
-                <TrendingDown className="w-4 h-4 text-primary-foreground" />
+            <div className="flex items-center gap-2.5 bg-white/10 rounded-xl p-2.5 backdrop-blur-sm">
+              <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+                <TrendingDown className="w-4 h-4" />
               </div>
-              <div className="flex-1">
-                <p className="text-[10px] text-primary-foreground/60">Expense</p>
-                <p className="text-xs font-semibold text-primary-foreground">
-                  <span key={showBalance ? "exp-show" : "exp-hide"} className="inline-block animate-[fadeScale_0.25s_ease]">
-                    {showBalance ? formatRupiah(totalExpense) : "****"}
-                  </span>
+              <div className="min-w-0">
+                <p className="text-[10px] opacity-70">Expense</p>
+                <p className="text-xs font-semibold truncate">
+                  {showBalance ? formatRupiah(totalExpense) : '••••'}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex justify-between mt-4 text-[10px] text-primary-foreground/60">
-            <span>Cash Flow</span>
-            <span className="font-medium text-primary-foreground">
-              {showBalance ? formatRupiah(totalIncome - totalExpense) : "****"}
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10 text-[10px] opacity-80">
+            <span>Net cash flow this month</span>
+            <span className="font-semibold">
+              {showBalance ? formatRupiah(totalIncome - totalExpense) : '••••'}
             </span>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Today Summary */}
-      <div className="rounded-2xl bg-card border border-border p-4 animate-card-enter stagger-1">
-        <p className="text-sm font-semibold text-card-foreground mb-2">Today</p>
-        <div className="flex gap-4">
-          <div className="flex-1 text-center">
-            <p className="text-[10px] text-muted-foreground">Income</p>
-            <p className="text-xs font-semibold text-[hsl(var(--accent-text))]">{formatRupiah(todaySummary.income)}</p>
-          </div>
-          <div className="flex-1 text-center">
-            <p className="text-[10px] text-muted-foreground">Expense</p>
-            <p className="text-xs font-semibold text-destructive dark:!text-red-400">{formatRupiah(todaySummary.expense)}</p>
-          </div>
-          <div className="flex-1 text-center">
-            <p className="text-[10px] text-muted-foreground">Net</p>
-            <p className={`text-xs font-semibold ${todaySummary.net >= 0 ? 'text-[hsl(var(--accent-text))]' : 'text-destructive dark:!text-red-400'}`}>{formatRupiah(todaySummary.net)}</p>
-          </div>
+      {/* Today */}
+      <div className="surface-card p-4 animate-card-enter stagger-1">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-h4 text-foreground">Today</p>
+          <span className="text-caption text-muted-foreground">
+            {new Date().toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' })}
+          </span>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <MiniStat label="Income" value={formatRupiah(todaySummary.income)} tone="success" />
+          <MiniStat label="Expense" value={formatRupiah(todaySummary.expense)} tone="danger" />
+          <MiniStat
+            label="Net"
+            value={formatRupiah(todaySummary.net)}
+            tone={todaySummary.net >= 0 ? 'success' : 'danger'}
+          />
         </div>
       </div>
 
@@ -222,8 +233,11 @@ export default function Dashboard() {
       </div>
 
       {/* Chart */}
-      <div className="rounded-2xl bg-card border border-border p-4 animate-card-enter stagger-3">
-        <p className="text-sm font-semibold text-card-foreground mb-3">Last 7 Days</p>
+      <div className="surface-card p-4 animate-card-enter stagger-3">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-h4 text-foreground">Last 7 Days</p>
+          <span className="text-caption text-muted-foreground">Income vs Expense</span>
+        </div>
         <ResponsiveContainer width="100%" height={120}>
           <AreaChart data={chartData}>
             <defs>
@@ -264,18 +278,18 @@ export default function Dashboard() {
       {/* Recent Transactions */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-foreground">Recent Transactions</p>
-          <button onClick={() => navigate('/transactions')} className="text-xs text-primary dark:!text-[hsl(var(--accent-text))] flex items-center gap-1">
-            See all <ArrowRight className="w-3 h-3 dark:!text-[hsl(var(--accent-text))]" />
+          <p className="text-h4 text-foreground">Recent Transactions</p>
+          <button onClick={() => navigate('/transactions')} className="text-caption text-primary font-semibold flex items-center gap-1 hover:underline">
+            See all <ArrowRight className="w-3 h-3" />
           </button>
         </div>
 
         {recentTxns.length === 0 ? (
-          <div className="bg-card border border-border rounded-2xl p-8 text-center animate-card-enter">
-            <p className="text-2xl mb-2">📊</p>
-            <p className="text-sm font-medium text-card-foreground mb-1">No transactions yet</p>
-            <p className="text-xs text-muted-foreground">Tap the + button to add your first transaction!</p>
-          </div>
+          <EmptyState
+            icon={<Sparkles className="w-6 h-6" />}
+            title="No transactions yet"
+            description="Tap the + button below to log your first income or expense."
+          />
         ) : (
           <div className="max-h-72 overflow-y-auto space-y-2 pr-1">
             {recentTxns.map((txn, i) => {
