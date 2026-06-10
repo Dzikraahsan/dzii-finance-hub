@@ -173,7 +173,13 @@ export default function Transactions() {
   // Render transaction list (reused in month+selectedDate and day view)
   const renderTransactionList = (txns: typeof grouped) => {
     if (txns.length === 0) {
-      return <p className="text-sm text-muted-foreground text-center py-12">No transactions found</p>;
+      return (
+        <EmptyState
+          icon={<Receipt className="w-6 h-6" />}
+          title="No transactions found"
+          description="Try changing your filters or add a new transaction with the + button."
+        />
+      );
     }
     return (
       <div className="space-y-5">
