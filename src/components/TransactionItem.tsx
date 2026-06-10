@@ -43,10 +43,13 @@ export default function TransactionItem({ txn, category, wallet, onEdit, onDelet
 
   return (
     <div
-      className="flex items-center gap-3 bg-card rounded-xl p-3 border border-border card-interactive"
+      className="flex items-center gap-3 surface-card p-3 card-interactive"
       onClick={() => setShowActions(!showActions)}
     >
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 bg-destructive/10 dark:!bg-red-400/10">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${
+        txn.type === 'income' ? 'bg-success/10' :
+        txn.type === 'transfer' ? 'bg-primary/10' : 'bg-destructive/10'
+      }`}>
         {category?.icon || '🔄'}
       </div>
       <div className="flex-1 min-w-0">
@@ -56,16 +59,21 @@ export default function TransactionItem({ txn, category, wallet, onEdit, onDelet
       {showActions ? (
         <div className="flex items-center gap-1 shrink-0">
           <button onClick={e => { e.stopPropagation(); onEdit(txn); setShowActions(false); }}
-            className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center transition-all active:scale-90">
+            aria-label="Edit transaction"
+            className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center transition-all active:scale-90">
             <Pencil className="w-3.5 h-3.5 text-primary dark:!text-[hsl(var(--accent-text))]" />
           </button>
           <button onClick={e => { e.stopPropagation(); onDelete(txn); setShowActions(false); }}
-            className="w-8 h-8 rounded-lg bg-destructive/10 dark:!bg-red-400/10 flex items-center justify-center transition-all active:scale-90">
+            aria-label="Delete transaction"
+            className="w-9 h-9 rounded-lg bg-destructive/10 dark:!bg-red-400/10 flex items-center justify-center transition-all active:scale-90">
             <Trash2 className="w-3.5 h-3.5 text-destructive dark:!text-red-400" />
           </button>
         </div>
       ) : (
-        <p className={`text-sm font-semibold shrink-0 ${txn.type === 'income' ? 'text-[hsl(var(--accent-text))]' : txn.type === 'transfer' ? 'text-primary' : '!text-red-400'}`}>
+        <p className={`text-sm font-semibold shrink-0 tabular-nums ${
+          txn.type === 'income' ? 'text-success' :
+          txn.type === 'transfer' ? 'text-primary' : 'text-destructive'
+        }`}>
           {txn.type === 'income' ? '+' : txn.type === 'transfer' ? '' : '-'}{formatRupiah(Number(txn.amount))}
         </p>
       )}
