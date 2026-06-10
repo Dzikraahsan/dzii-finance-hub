@@ -4,6 +4,9 @@ import { formatRupiah, summarize, generateInsights } from '@/lib/financeEngine';
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useMemo, useState } from 'react';
 import InsightCards from '@/components/InsightCards';
+import PageHeader from '@/components/PageHeader';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PieChart as PieIcon } from 'lucide-react';
 
 export default function Analytics() {
   const { data: transactions = [] } = useTransactions();
@@ -67,34 +70,27 @@ export default function Analytics() {
 
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in pb-4">
-      <h1 className="text-xl font-bold text-foreground">Analytics</h1>
+      <PageHeader
+        eyebrow="Insights"
+        title="Analytics"
+        description="Understand your spending patterns at a glance"
+      />
 
       {/* Period Selector */}
-      <div className="flex gap-2">
+      <div className="flex gap-2 p-1 surface-card">
         {(['7d', '30d', 'all'] as const).map(p => (
           <button key={p} onClick={() => setPeriod(p)}
-            className={`px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all ${period === p ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground border border-border'}`}>
+            className={`flex-1 px-3 py-2 rounded-xl text-caption font-semibold transition-all ${period === p ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
             {p === '7d' ? '7 Days' : p === '30d' ? '30 Days' : 'All'}
           </button>
         ))}
       </div>
 
       {/* Summary Cards */}
-      <div className="flex flex-col gap-2 sm:gap-3">
-        <div className="bg-card border border-primary rounded-lg p-3 text-center animate-card-enter stagger-1">
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Income</p>
-          <p className="text-sm sm:text-base font-bold text-[hsl(var(--accent-text))] animate-number">{formatRupiah(totalIncome)}</p>
-        </div>
-        <div className="bg-card border border-destructive/40 rounded-lg p-3 text-center animate-card-enter stagger-2">
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Expense</p>
-          <p className="text-sm sm:text-base font-bold text-destructive dark:!text-red-400 animate-number">{formatRupiah(totalExpense)}</p>
-        </div>
-        <div className="bg-card border border-[hsl(var(--success))] rounded-lg p-3 text-center animate-card-enter stagger-3">
-          <p className="text-[10px] sm:text-xs text-muted-foreground">Net</p>
-          <p className={`text-sm sm:text-base font-bold animate-number ${totalIncome - totalExpense >= 0 ? 'text-[hsl(var(--accent-text))]' : 'text-destructive dark:!text-red-400'}`}>
-            {formatRupiah(totalIncome - totalExpense)}
-          </p>
-        </div>
+      <div className="grid grid-cols-3 gap-2">
+        <StatTile label="Income" value={formatRupiah(totalIncome)} tone="success" />
+        <StatTile label="Expense" value={formatRupiah(totalExpense)} tone="danger" />
+        <StatTile label="Net" value={formatRupiah(totalIncome - totalExpense)} tone={totalIncome - totalExpense >= 0 ? 'success' : 'danger'} />
       </div>
 
       {/* Insights */}
@@ -124,8 +120,8 @@ export default function Analytics() {
 
       {/* Expense by Category */}
       {expenseByCategory.length > 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-5">
-          <p className="text-sm font-semibold text-card-foreground mb-3">Expense by Category</p>
+        <div className="surface-card p-4 animate-card-enter stagger-5">
+          <p className="text-h4 text-foreground mb-3">Expense by Category</p>
           <div className="outline-none focus:outline-none active:outline-none">
             <ResponsiveContainer width="100%" height={180}>
               <PieChart>
@@ -148,16 +144,16 @@ export default function Analytics() {
           </div>
         </div>
       ) : (
-        <div className="bg-card border border-border rounded-2xl p-8 text-center animate-card-enter">
-          <p className="text-2xl mb-2">📊</p>
-          <p className="text-sm font-medium text-card-foreground mb-1">No expense data</p>
-          <p className="text-xs text-muted-foreground">Start adding transactions to see your spending breakdown.</p>
-        </div>
+        <EmptyState
+          icon={<PieIcon className="w-6 h-6" />}
+          title="No expense data yet"
+          description="Add transactions and your category breakdown will appear here."
+        />
       )}
 
       {/* Spending Trend */}
-      <div className="bg-card border border-border rounded-2xl p-4 animate-card-enter stagger-6">
-        <p className="text-sm font-semibold text-card-foreground mb-3">Spending Trend</p>
+      <div className="surface-card p-4 animate-card-enter stagger-6">
+        <p className="text-h4 text-foreground mb-3">Spending Trend</p>
         <ResponsiveContainer width="100%" height={140}>
           <AreaChart data={chartData}>
             <defs>
@@ -178,6 +174,16 @@ export default function Analytics() {
           </AreaChart>
         </ResponsiveContainer>
       </div>
+    </div>
+  );
+}
+
+function StatTile({ label, value, tone }: { label: string; value: string; tone: 'success' | 'danger' }) {
+  const toneClass = tone === 'success' ? 'text-success' : 'text-destructive';
+  return (
+    <div className="surface-card p-3 text-center animate-card-enter">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</p>
+      <p className={`text-sm font-bold mt-1 animate-number truncate ${toneClass}`}>{value}</p>
     </div>
   );
 }
