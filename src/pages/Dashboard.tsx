@@ -10,6 +10,7 @@ import TransactionItem from '@/components/TransactionItem';
 import EditTransactionSheet from '@/components/EditTransactionSheet';
 import InsightCards from '@/components/InsightCards';
 import { EmptyState } from '@/components/ui/empty-state';
+import { useAuth } from '@/contexts/AuthContext';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -17,6 +18,7 @@ import {
 import { toast } from 'sonner';
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const { data: wallets = [] } = useWallets();
   const { data: transactions = [] } = useTransactions();
   const { data: categories = [] } = useCategories();
@@ -319,6 +321,18 @@ export default function Dashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+function MiniStat({ label, value, tone }: { label: string; value: string; tone: 'success' | 'danger' | 'neutral' }) {
+  const toneClass =
+    tone === 'success' ? 'text-success' :
+    tone === 'danger'  ? 'text-destructive' : 'text-foreground';
+  return (
+    <div className="rounded-xl bg-surface px-3 py-2.5 text-center">
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{label}</p>
+      <p className={`text-xs font-semibold mt-0.5 truncate ${toneClass}`}>{value}</p>
     </div>
   );
 }
