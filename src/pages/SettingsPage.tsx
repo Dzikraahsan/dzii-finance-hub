@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useTransactions, useCategories, useWallets } from '@/hooks/useFinanceData';
 import { formatCurrency } from '@/lib/format';
 import { toast } from 'sonner';
+import PageHeader from '@/components/PageHeader';
 
 export default function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -64,21 +65,21 @@ export default function SettingsPage() {
 
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
-      <h1 className="text-xl font-bold text-foreground">Settings</h1>
+      <PageHeader eyebrow="Account" title="Settings" description="Manage your profile and preferences" />
 
       {/* User info */}
-      <div className="bg-card border border-border rounded-2xl p-4 flex items-center gap-3 animate-card-enter">
-        <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold animate-value-pop">
+      <div className="surface-card p-4 flex items-center gap-3 animate-card-enter">
+        <div className="w-12 h-12 rounded-full gradient-primary flex items-center justify-center text-primary-foreground font-bold shadow-md">
           {user?.email?.[0].toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-card-foreground truncate">{user?.email}</p>
-          <p className="text-xs text-muted-foreground">Free Plan</p>
+          <p className="text-sm font-semibold text-foreground truncate">{user?.email}</p>
+          <p className="text-caption text-muted-foreground">Free Plan</p>
         </div>
       </div>
 
       {/* Theme Toggle */}
-      <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between animate-card-enter stagger-2">
+      <div className="surface-card p-4 flex items-center justify-between animate-card-enter stagger-2">
         <div className="flex items-center gap-3">
           {darkMode ? <Moon className="w-5 h-5 text-primary dark:!text-[hsl(var(--accent-text))]" /> : <Sun className="w-5 h-5 text-warning" />}
           <div>
@@ -92,7 +93,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Export */}
-      <button onClick={exportCSV} className="w-full bg-card border border-border rounded-2xl p-4 flex items-center gap-3 text-left btn-press animate-card-enter stagger-3">
+      <button onClick={exportCSV} className="w-full surface-card p-4 flex items-center gap-3 text-left btn-press animate-card-enter stagger-3">
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center"><Download className="w-5 h-5 text-primary dark:!text-[hsl(var(--accent-text))]" /></div>
         <div className="flex-1">
           <p className="text-sm font-medium text-card-foreground">Export Data</p>
@@ -102,7 +103,7 @@ export default function SettingsPage() {
       </button>
 
       {/* Sign Out */}
-      <button onClick={handleSignOut} className="w-full bg-card border border-destructive/20 rounded-2xl p-4 flex items-center gap-3 text-left btn-press animate-card-enter stagger-4">
+      <button onClick={handleSignOut} className="w-full bg-card border border-destructive/30 rounded-2xl shadow-sm p-4 flex items-center gap-3 text-left btn-press animate-card-enter stagger-4">
         <div className="w-10 h-10 rounded-xl bg-destructive/10 dark:bg-destructive/25 flex items-center justify-center"><LogOut className="w-5 h-5 text-destructive dark:text-red-400" /></div>
         <div className="flex-1">
           <p className="text-sm font-medium text-destructive dark:text-red-400">Sign Out</p>

@@ -1,8 +1,10 @@
 import { useWallets, useDeleteWallet } from '@/hooks/useFinanceData';
 import { formatCurrency } from '@/lib/format';
-import { Plus, CreditCard, Pencil, Trash2 } from 'lucide-react';
+import { Plus, CreditCard, Pencil, Trash2, Wallet as WalletIcon } from 'lucide-react';
 import { useState } from 'react';
 import AddWalletSheet from '@/components/AddWalletSheet';
+import PageHeader from '@/components/PageHeader';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -28,24 +30,42 @@ export default function Wallets() {
 
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Wallets</h1>
-        <button onClick={() => { setEditWallet(null); setShowAdd(true); }}
-          className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center active:scale-90 transition-transform">
-          <Plus className="w-4 h-4 text-primary dark:!text-[hsl(var(--accent-text))]" />
-        </button>
-      </div>
-      <div className="bg-card border border-border rounded-2xl p-5 text-center animate-card-enter">
-        <p className="text-xs text-muted-foreground mb-1">Total Balance</p>
-        <p className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground animate-number">{formatCurrency(total)}</p>
-        <div className="flex items-center justify-center gap-1 mt-2">
-          <CreditCard className="w-3.5 h-3.5 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">{wallets.length} wallets</span>
+      <PageHeader
+        eyebrow="Accounts"
+        title="Wallets"
+        description="All your money, in one place"
+        action={
+          <button onClick={() => { setEditWallet(null); setShowAdd(true); }}
+            aria-label="Add wallet"
+            className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center btn-press shadow-md">
+            <Plus className="w-4 h-4" />
+          </button>
+        }
+      />
+      <div className="relative rounded-2xl gradient-primary text-primary-foreground p-5 text-center overflow-hidden glow-primary animate-card-enter">
+        <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" aria-hidden />
+        <p className="text-caption opacity-80 mb-1 relative">Total Balance</p>
+        <p className="text-3xl font-bold tracking-tight font-display animate-number relative">{formatCurrency(total)}</p>
+        <div className="flex items-center justify-center gap-1.5 mt-2 opacity-80 relative">
+          <CreditCard className="w-3.5 h-3.5" />
+          <span className="text-caption">{wallets.length} {wallets.length === 1 ? 'wallet' : 'wallets'}</span>
         </div>
       </div>
+      {wallets.length === 0 ? (
+        <EmptyState
+          icon={<WalletIcon className="w-6 h-6" />}
+          title="No wallets yet"
+          description="Add cash, bank, or e-wallet accounts to start tracking your balance."
+          action={
+            <button onClick={() => setShowAdd(true)} className="h-10 px-4 rounded-xl gradient-primary text-primary-foreground text-sm font-semibold btn-press shadow-md">
+              Add wallet
+            </button>
+          }
+        />
+      ) : (
       <div className="space-y-3">
         {wallets.map((wallet, i) => (
-          <div key={wallet.id} className={`bg-card border border-border rounded-2xl p-4 flex items-center gap-3 card-interactive animate-list-item stagger-${Math.min(i + 1, 10)}`}>
+          <div key={wallet.id} className={`surface-card p-4 flex items-center gap-3 card-interactive animate-list-item stagger-${Math.min(i + 1, 10)}`}>
             <div className="w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0" style={{ backgroundColor: wallet.color + '20' }}>{wallet.icon}</div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-card-foreground truncate">{wallet.name}</p>
@@ -67,6 +87,7 @@ export default function Wallets() {
           </div>
         ))}
       </div>
+      )}
 
       <AddWalletSheet open={showAdd} onOpenChange={setShowAdd} editWallet={editWallet} />
       <AlertDialog open={!!deletingId} onOpenChange={v => { if (!v) setDeletingId(null); }}>

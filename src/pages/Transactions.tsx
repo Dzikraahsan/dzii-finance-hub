@@ -1,12 +1,14 @@
 import { useTransactions, useCategories, useWallets, useDeleteTransaction } from '@/hooks/useFinanceData';
 import { formatDate, formatCurrency } from '@/lib/format';
-import { Search, SlidersHorizontal, TrendingUp, TrendingDown, Calendar, List, BarChart3 } from 'lucide-react';
+import { Search, SlidersHorizontal, TrendingUp, TrendingDown, Calendar, List, BarChart3, Receipt } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
 import TransactionItem from '@/components/TransactionItem';
 import TransactionFilterSheet, { TransactionFilters, defaultFilters, hasActiveFilters } from '@/components/TransactionFilterSheet';
 import EditTransactionSheet from '@/components/EditTransactionSheet';
 import TransactionCalendarView from '@/components/TransactionCalendarView';
 import TransactionWeeklyView from '@/components/TransactionWeeklyView';
+import PageHeader from '@/components/PageHeader';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -173,7 +175,13 @@ export default function Transactions() {
   // Render transaction list (reused in month+selectedDate and day view)
   const renderTransactionList = (txns: typeof grouped) => {
     if (txns.length === 0) {
-      return <p className="text-sm text-muted-foreground text-center py-12">No transactions found</p>;
+      return (
+        <EmptyState
+          icon={<Receipt className="w-6 h-6" />}
+          title="No transactions found"
+          description="Try changing your filters or add a new transaction with the + button."
+        />
+      );
     }
     return (
       <div className="space-y-5">
@@ -215,13 +223,15 @@ export default function Transactions() {
   };
 
   return (
-    <div className="px-4 pt-6 animate-fade-in">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold text-foreground">Transactions</h1>
-      </div>
+    <div className="px-4 pt-6 pb-2 animate-fade-in space-y-4">
+      <PageHeader
+        eyebrow="History"
+        title="Transactions"
+        description="Track every income and expense across your wallets"
+      />
 
       {/* View switcher */}
-      <div className="flex gap-1 mb-4 p-1 bg-card border border-border rounded-xl">
+      <div className="flex gap-1 p-1 surface-card">
         {(['day', 'week', 'month'] as ViewMode[]).map(mode => {
           const Icon = viewIcons[mode];
           const isActive = viewMode === mode;
@@ -243,8 +253,8 @@ export default function Transactions() {
       {/* Search + Filter (day view only) */}
         <div className="max-h-[30vh] overflow-y-auto pr-1">
         {viewMode === 'day' && (
-          <div className="flex gap-2 mb-5">
-            <div className="flex-1 flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-2.5">
+          <div className="flex gap-2 mb-4">
+            <div className="flex-1 flex items-center gap-2 bg-surface border border-border rounded-xl px-3 py-2.5 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 transition-all">
               <Search className="w-4 h-4 text-muted-foreground shrink-0" />
               <input
                 value={search}
@@ -256,8 +266,9 @@ export default function Transactions() {
 
             <button
               onClick={() => setShowFilter(true)}
-              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 btn-press ${
-                active ? 'bg-primary text-primary-foreground' : 'bg-card border border-border'
+              aria-label="Filter transactions"
+              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 btn-press shadow-xs ${
+                active ? 'bg-primary text-primary-foreground' : 'bg-surface border border-border'
               }`}
             >
               <SlidersHorizontal
