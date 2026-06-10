@@ -1,8 +1,10 @@
 import { useBudgets, useCategories, useTransactions, useDeleteBudget } from '@/hooks/useFinanceData';
 import { formatCurrency } from '@/lib/format';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Target } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import AddBudgetSheet from '@/components/AddBudgetSheet';
+import PageHeader from '@/components/PageHeader';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -45,16 +47,29 @@ export default function BudgetPage() {
 
   return (
     <div className="px-4 pt-6 space-y-5 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground">Budget</h1>
-        <button onClick={() => { setEditBudget(null); setShowAdd(true); }}
-          className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center active:scale-90 transition-transform">
-          <Plus className="w-4 h-4 text-primary dark:!text-[hsl(var(--accent-text))]" />
-        </button>
-      </div>
-      <p className="text-sm text-muted-foreground">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
+      <PageHeader
+        eyebrow="Spend control"
+        title="Budget"
+        description={new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+        action={
+          <button onClick={() => { setEditBudget(null); setShowAdd(true); }}
+            aria-label="Add budget"
+            className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center btn-press shadow-md">
+            <Plus className="w-4 h-4" />
+          </button>
+        }
+      />
       {budgetsWithUsage.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-12">No budgets set. Tap + to create one!</p>
+        <EmptyState
+          icon={<Target className="w-6 h-6" />}
+          title="No budgets yet"
+          description="Set monthly limits for your spending categories to stay on track."
+          action={
+            <button onClick={() => setShowAdd(true)} className="h-10 px-4 rounded-xl gradient-primary text-primary-foreground text-sm font-semibold btn-press shadow-md">
+              Create budget
+            </button>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {budgetsWithUsage.map(budget => {
@@ -63,7 +78,7 @@ export default function BudgetPage() {
             const status = pct >= 100 ? 'over' : pct >= 80 ? 'warn' : 'ok';
             const barColor = status === 'over' ? 'bg-destructive' : status === 'warn' ? 'bg-warning' : 'bg-success';
             return (
-              <div key={budget.id} className={`bg-card border border-border rounded-2xl p-4 card-interactive animate-list-item stagger-${Math.min(budgetsWithUsage.indexOf(budget) + 1, 10)} ${status === 'over' ? 'glow-destructive' : ''}`}>
+              <div key={budget.id} className={`surface-card p-4 card-interactive animate-list-item stagger-${Math.min(budgetsWithUsage.indexOf(budget) + 1, 10)} ${status === 'over' ? 'glow-destructive' : ''}`}>
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 bg-red-400/10">{cat?.icon}</div>
                   <div className="flex-1 min-w-0">
