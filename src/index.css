@@ -387,3 +387,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .nav-tab-active {
   transform: scale(1.08);
 }
+
+  /* Auth inputs */
+  .auth-input {
+    @apply w-full bg-transparent pl-10 pr-3 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none rounded-xl;
+  }
