@@ -1,12 +1,14 @@
 import { useTransactions, useCategories, useWallets, useDeleteTransaction } from '@/hooks/useFinanceData';
 import { formatDate, formatCurrency } from '@/lib/format';
-import { Search, SlidersHorizontal, TrendingUp, TrendingDown, Calendar, List, BarChart3 } from 'lucide-react';
+import { Search, SlidersHorizontal, TrendingUp, TrendingDown, Calendar, List, BarChart3, Receipt } from 'lucide-react';
 import { useState, useMemo, useCallback } from 'react';
 import TransactionItem from '@/components/TransactionItem';
 import TransactionFilterSheet, { TransactionFilters, defaultFilters, hasActiveFilters } from '@/components/TransactionFilterSheet';
 import EditTransactionSheet from '@/components/EditTransactionSheet';
 import TransactionCalendarView from '@/components/TransactionCalendarView';
 import TransactionWeeklyView from '@/components/TransactionWeeklyView';
+import PageHeader from '@/components/PageHeader';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
