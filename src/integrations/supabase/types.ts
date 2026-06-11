@@ -232,34 +232,40 @@ export type Database = {
       }
       wallets: {
         Row: {
+          account_number: string | null
           balance: number
           color: string
           created_at: string
           icon: string
           id: string
           name: string
+          provider: string | null
           type: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          account_number?: string | null
           balance?: number
           color?: string
           created_at?: string
           icon?: string
           id?: string
           name: string
+          provider?: string | null
           type?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          account_number?: string | null
           balance?: number
           color?: string
           created_at?: string
           icon?: string
           id?: string
           name?: string
+          provider?: string | null
           type?: string
           updated_at?: string
           user_id?: string
